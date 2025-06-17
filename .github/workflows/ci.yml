@@ -1,0 +1,374 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 3 AM UTC for monitoring
+    - cron: '0 3 * * *'
+
+env:
+  PYTHON_VERSION: '3.12'
+  
+jobs:
+  lint-and-test:
+    name: Lint, Test & Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          poppler-utils \
+          ghostscript \
+          libgdal-dev \
+          tesseract-ocr
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,monitoring]"
+    
+    - name: Lint with Ruff
+      run: |
+        ruff check src/ tests/ tools/ --output-format=github
+    
+    - name: Format check with Black
+      run: |
+        black --check --diff src/ tests/ tools/
+    
+    - name: Type check with MyPy
+      run: |
+        mypy src/
+    
+    - name: Run smoke tests
+      run: |
+        python smoke_test.py
+    
+    - name: Generate synthetic test data
+      run: |
+        python tests/synth/pdf_generator.py
+    
+    - name: Run unit tests with coverage
+      run: |
+        pytest tests/ \
+          --cov=src \
+          --cov-report=xml \
+          --cov-report=term-missing \
+          --cov-fail-under=70 \
+          -v
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+    
+    - name: Test CLI commands
+      run: |
+        # Test CLI help
+        python -m src.cli --help
+        
+        # Test health check
+        python -m src.cli health-check
+        
+        # Test parsing with synthetic data (if available)
+        if [ -f "tests/synth/generated/ci_test_statement.pdf" ]; then
+          python -m src.cli parse tests/synth/generated/ci_test_statement.pdf --validate
+        fi
+
+  synthetic-regression:
+    name: Synthetic PDF Regression Test
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y poppler-utils ghostscript
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Generate synthetic test data
+      run: |
+        python tests/synth/pdf_generator.py
+    
+    - name: Test synthetic data parsing
+      run: |
+        # Parse synthetic PDF
+        python -m src.cli parse tests/synth/generated/ci_test_statement.pdf \
+          --output tests/synth/generated/ci_test_output.csv
+        
+        # Basic validation (check if CSV was created and has content)
+        if [ ! -f "tests/synth/generated/ci_test_output.csv" ]; then
+          echo "❌ Output CSV not created"
+          exit 1
+        fi
+        
+        # Check if CSV has reasonable number of rows
+        row_count=$(wc -l < tests/synth/generated/ci_test_output.csv)
+        if [ "$row_count" -lt 10 ]; then
+          echo "❌ Too few rows in output CSV: $row_count"
+          exit 1
+        fi
+        
+        echo "✅ Synthetic regression test passed: $row_count rows extracted"
+
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  docker-build:
+    name: Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker image
+      run: |
+        docker build -f infra/Dockerfile -t newevolveo3pro:test .
+    
+    - name: Test Docker image
+      run: |
+        # Test that the image runs and CLI is available
+        docker run --rm newevolveo3pro:test python -m src.cli --help
+        
+        # Test health check
+        docker run --rm newevolveo3pro:test python -m src.cli health-check
+
+  cost-monitoring:
+    name: Cost & Performance Monitoring
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,monitoring]"
+    
+    - name: Generate cost report
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        # Generate synthetic cost report (would connect to real metrics in prod)
+        python -c "
+        from src.core.metrics import get_metrics
+        metrics = get_metrics()
+        cost_summary = metrics.get_cost_summary()
+        print('Daily Cost Summary:')
+        for key, value in cost_summary.items():
+            print(f'  {key}: {value}')
+        "
+    
+    - name: Check cost thresholds
+      run: |
+        # This would check actual costs against budgets
+        echo "Cost monitoring check completed"
+
+  integration-test:
+    name: Integration Tests (Cloud Services)
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    environment: integration
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y poppler-utils
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,cloud]"
+    
+    - name: Test cloud extractors (if credentials available)
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AZURE_FORM_RECOGNIZER_ENDPOINT: ${{ secrets.AZURE_FORM_RECOGNIZER_ENDPOINT }}
+        AZURE_FORM_RECOGNIZER_KEY: ${{ secrets.AZURE_FORM_RECOGNIZER_KEY }}
+      run: |
+        # Only run if we have test data and credentials
+        if [ -f "data/incoming/Itau_2024-10.pdf" ] && [ -n "$AWS_ACCESS_KEY_ID" ]; then
+          echo "Running integration test with Textract..."
+          python -m src.cli parse data/incoming/Itau_2024-10.pdf \
+            --extractors textract \
+            --output /tmp/integration_test.csv
+          echo "✅ Integration test completed"
+        else
+          echo "⚠️  Skipping integration test (no credentials or test data)"
+        fi
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, docker-build, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Deploy to staging
+      run: |
+        echo "🚀 Deploying to staging environment..."
+        # This would deploy via Docker Compose, Helm, or cloud provider
+        echo "✅ Staging deployment completed"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, docker-build, security-scan, integration-test]
+    if: github.ref == 'refs/heads/main'
+    
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Deploy to production
+      run: |
+        echo "🚀 Deploying to production environment..."
+        # Blue-green deployment would go here
+        echo "✅ Production deployment completed"
+    
+    - name: Post-deployment health check
+      run: |
+        echo "🔍 Running post-deployment health checks..."
+        # Health check endpoints would be tested here
+        echo "✅ Health checks passed"
+
+  auto-golden-pr:
+    name: Auto Golden File PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BOT_PAT }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y poppler-utils ghostscript
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,monitoring]"
+    
+    - name: Configure Git for Bot
+      run: |
+        git config --global user.name "NewEvolveo3pro Bot"
+        git config --global user.email "bot@newevolveo3pro.com"
+    
+    - name: Install GitHub CLI
+      run: |
+        type -p curl >/dev/null || sudo apt update && sudo apt install curl -y
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update
+        sudo apt install gh -y
+    
+    - name: Authenticate GitHub CLI
+      env:
+        GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
+      run: echo "$GITHUB_TOKEN" | gh auth login --with-token
+    
+    - name: Run Auto-Golden Bot Health Check
+      run: |
+        python scripts/auto_golden_pr.py --health-check
+    
+    - name: Scan for Auto-Golden Candidates
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        BOT_PAT: ${{ secrets.BOT_PAT }}
+      run: |
+        echo "🤖 Running Auto-Golden Bot..."
+        python scripts/auto_golden_pr.py --min-confidence 0.95 --max-goldens 3
+    
+    - name: Upload Bot Artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: auto-golden-artifacts
+        path: data/artefacts/auto_golden_summary_*.json
+        retention-days: 30

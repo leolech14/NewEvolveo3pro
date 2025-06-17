@@ -1,0 +1,61 @@
+# Auto-Golden Configuration
+# PDFs in this list are eligible for automatic golden file creation
+# when they meet confidence and validation thresholds
+
+# Configuration
+min_confidence: 0.95
+max_daily_goldens: 5
+enable_auto_pr: true
+
+# Approved PDF patterns (by filename or hash)
+# Add PDFs here after manual verification that auto-golden is safe
+approved_patterns:
+  - "Itau_202[4-5]-*.pdf"  # Itaú statements from 2024-2025
+  - "synthetic_*.pdf"      # Synthetic test PDFs
+
+# Specific approved files (by SHA-256 hash)
+# Use this for exact file approval
+approved_hashes:
+  # Example: Add actual hashes after manual verification
+  # - "a1b2c3d4e5f6..." 
+
+# Excluded patterns - never auto-process these
+excluded_patterns:
+  - "*test*.pdf"
+  - "*temp*.pdf"
+  - "*draft*.pdf"
+
+# Quality thresholds
+thresholds:
+  min_confidence: 0.95           # Minimum extraction confidence
+  min_ge_success: 0.90          # Minimum Great Expectations success rate
+  min_transactions: 1           # Minimum number of transactions
+  max_transactions: 1000        # Maximum number of transactions
+  min_total_amount: 0.01        # Minimum total amount (BRL)
+  max_total_amount: 500000.00   # Maximum total amount (BRL)
+
+# PR settings
+pr_settings:
+  auto_merge: false             # Whether to auto-merge PRs
+  require_review: true          # Require human review
+  add_labels:
+    - "auto-golden" 
+    - "bot"
+    - "validation"
+  assignees: []                 # GitHub usernames to assign PRs to
+
+# Notification settings
+notifications:
+  slack_webhook: null           # Slack webhook URL for notifications
+  email_recipients: []          # Email addresses for notifications
+  
+# Rate limiting
+rate_limits:
+  max_runs_per_day: 3          # Maximum bot runs per day
+  cooldown_hours: 4            # Hours between runs
+  
+# Logging
+logging:
+  level: "INFO"
+  save_artifacts: true
+  retention_days: 30
