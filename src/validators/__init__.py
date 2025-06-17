@@ -1,7 +1,7 @@
 """Validation and comparison utilities."""
 
-from .semantic_compare import SemanticComparator
 from .golden_validator import GoldenValidator
+from .semantic_compare import SemanticComparator
 
 __all__ = [
     "SemanticComparator",

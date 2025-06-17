@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import re
-from typing import Final, Pattern, Dict, List
 from decimal import Decimal
-
+from re import Pattern
+from typing import Final
 
 # Brazilian date patterns
 RE_DATE_BR: Final[Pattern[str]] = re.compile(
@@ -20,12 +20,12 @@ RE_AMOUNT_BR: Final[Pattern[str]] = re.compile(
 # Itaú specific patterns
 RE_POSTING_NATIONAL: Final[Pattern[str]] = re.compile(
     r"^[~g]*\s*(?P<date>\d{1,2}/\d{1,2})\s+(?P<desc>.+?)\s+(?P<amt>-?\d{1,3}(?:\.\d{3})*,\d{2})$",
-    re.MULTILINE
+    re.MULTILINE,
 )
 
 RE_POSTING_FX: Final[Pattern[str]] = re.compile(
     r"^(?P<date>\d{1,2}/\d{1,2})\s+(?P<desc>.+?)\s+(?P<amt_orig>\d{1,3}(?:\.\d{3})*,\d{2})\s+(?P<amt_brl>\d{1,3}(?:\.\d{3})*,\d{2})$",
-    re.MULTILINE
+    re.MULTILINE,
 )
 
 # Statement total patterns
@@ -38,7 +38,7 @@ RE_TOTAL_GENERIC: Final[Pattern[str]] = re.compile(
 )
 
 # Header/footer patterns to ignore
-RE_HEADER_PATTERNS: Final[List[Pattern[str]]] = [
+RE_HEADER_PATTERNS: Final[list[Pattern[str]]] = [
     re.compile(r"^Itaú Unibanco.*", re.IGNORECASE),
     re.compile(r"^CARTÃO DE CRÉDITO.*", re.IGNORECASE),
     re.compile(r"^Data.*Histórico.*Valor", re.IGNORECASE),
@@ -46,7 +46,7 @@ RE_HEADER_PATTERNS: Final[List[Pattern[str]]] = [
     re.compile(r"^\d+/\d+$"),  # Page numbers
 ]
 
-RE_FOOTER_PATTERNS: Final[List[Pattern[str]]] = [
+RE_FOOTER_PATTERNS: Final[list[Pattern[str]]] = [
     re.compile(r"^Atendimento.*", re.IGNORECASE),
     re.compile(r"^www\.itau\.com\.br", re.IGNORECASE),
     re.compile(r"^Central de Relacionamento", re.IGNORECASE),
@@ -58,7 +58,7 @@ RE_CURRENCY: Final[Pattern[str]] = re.compile(
 )
 
 # Category classification patterns
-CATEGORY_PATTERNS: Final[Dict[str, List[Pattern[str]]]] = {
+CATEGORY_PATTERNS: Final[dict[str, list[Pattern[str]]]] = {
     "restaurant": [
         re.compile(r"RESTAURANTE", re.IGNORECASE),
         re.compile(r"LANCHONETE", re.IGNORECASE),
@@ -111,22 +111,22 @@ CATEGORY_PATTERNS: Final[Dict[str, List[Pattern[str]]]] = {
 def normalize_amount(amount_str: str) -> Decimal:
     """
     Convert Brazilian amount format to Decimal.
-    
+
     Examples:
         "1.234,56" -> Decimal("1234.56")
-        "156,78" -> Decimal("156.78") 
+        "156,78" -> Decimal("156.78")
         "1,234.56" -> Decimal("1234.56") (US format)
     """
     if not amount_str:
         return Decimal("0")
-    
+
     # Remove currency symbols and whitespace
     cleaned = re.sub(r"[R$\s]", "", amount_str)
-    
+
     # Handle negative signs
     sign = -1 if cleaned.startswith("-") else 1
     cleaned = cleaned.lstrip("-+")
-    
+
     # Check if this looks like Brazilian format (comma as decimal separator)
     if "," in cleaned and "." in cleaned:
         # Both separators present - assume Brazilian format
@@ -144,7 +144,7 @@ def normalize_amount(amount_str: str) -> Decimal:
             cleaned = "".join(parts[:-1]) + "." + parts[-1]
         else:
             cleaned = "".join(parts)
-    
+
     try:
         return Decimal(cleaned) * sign
     except:
@@ -154,7 +154,7 @@ def normalize_amount(amount_str: str) -> Decimal:
 def normalize_date(date_str: str, current_year: int = 2024) -> str:
     """
     Normalize Brazilian date to YYYY-MM-DD format.
-    
+
     Examples:
         "15/03" -> "2024-03-15"
         "15/03/24" -> "2024-03-15"
@@ -163,30 +163,30 @@ def normalize_date(date_str: str, current_year: int = 2024) -> str:
     match = RE_DATE_BR.match(date_str.strip())
     if not match:
         return date_str
-    
+
     day = int(match.group("day"))
     month = int(match.group("month"))
     year_str = match.group("year")
-    
+
     if year_str:
         year = int(year_str)
         if year < 100:  # 2-digit year
             year = 2000 + year if year < 50 else 1900 + year
     else:
         year = current_year
-    
+
     return f"{year:04d}-{month:02d}-{day:02d}"
 
 
 def classify_transaction(description: str) -> str:
     """Classify transaction based on description patterns."""
     description_upper = description.upper()
-    
+
     for category, patterns in CATEGORY_PATTERNS.items():
         for pattern in patterns:
             if pattern.search(description_upper):
                 return category
-    
+
     return "other"
 
 
@@ -200,7 +200,7 @@ def is_footer_line(line: str) -> bool:
     return any(pattern.match(line.strip()) for pattern in RE_FOOTER_PATTERNS)
 
 
-def extract_currency_amounts(text: str) -> List[tuple[str, Decimal]]:
+def extract_currency_amounts(text: str) -> list[tuple[str, Decimal]]:
     """Extract all currency amounts from text."""
     matches = []
     for match in RE_CURRENCY.finditer(text):
@@ -215,24 +215,33 @@ def is_international_transaction(description: str, amount_orig: str = None) -> b
     """Determine if transaction is international based on description and amount."""
     # Check for international indicators
     intl_indicators = [
-        "USD", "EUR", "DOLAR", "EURO", "FOREIGN", "INTERNATIONAL",
-        "PAYPAL", "AMAZON.COM", "UBER ", "SPOTIFY", "NETFLIX"
+        "USD",
+        "EUR",
+        "DOLAR",
+        "EURO",
+        "FOREIGN",
+        "INTERNATIONAL",
+        "PAYPAL",
+        "AMAZON.COM",
+        "UBER ",
+        "SPOTIFY",
+        "NETFLIX",
     ]
-    
+
     description_upper = description.upper()
     for indicator in intl_indicators:
         if indicator in description_upper:
             return True
-    
+
     # Check if original amount is present (FX transaction)
     if amount_orig:
         return True
-    
+
     return False
 
 
 # Confidence scoring weights
-CONFIDENCE_WEIGHTS: Final[Dict[str, float]] = {
+CONFIDENCE_WEIGHTS: Final[dict[str, float]] = {
     "date_match": 0.3,
     "amount_match": 0.4,
     "description_quality": 0.2,
@@ -241,27 +250,24 @@ CONFIDENCE_WEIGHTS: Final[Dict[str, float]] = {
 
 
 def calculate_confidence(
-    has_date: bool,
-    has_amount: bool,
-    description_length: int,
-    pattern_matched: bool
+    has_date: bool, has_amount: bool, description_length: int, pattern_matched: bool
 ) -> float:
     """Calculate confidence score for extracted transaction."""
     score = 0.0
-    
+
     if has_date:
         score += CONFIDENCE_WEIGHTS["date_match"]
-    
+
     if has_amount:
         score += CONFIDENCE_WEIGHTS["amount_match"]
-    
+
     # Description quality based on length
     if description_length > 5:
         score += CONFIDENCE_WEIGHTS["description_quality"]
     elif description_length > 0:
         score += CONFIDENCE_WEIGHTS["description_quality"] * 0.5
-    
+
     if pattern_matched:
         score += CONFIDENCE_WEIGHTS["pattern_match"]
-    
+
     return min(score, 1.0)

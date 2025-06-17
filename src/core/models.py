@@ -5,12 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from typing import Optional, List, Dict, Any
 from enum import Enum
+from typing import Any
 
 
 class ExtractorType(Enum):
     """Available extraction engines."""
+
     PDFPLUMBER = "pdfplumber"
     CAMELOT = "camelot"
     TEXTRACT = "textract"
@@ -20,6 +21,7 @@ class ExtractorType(Enum):
 
 class TransactionType(Enum):
     """Transaction classification."""
+
     DOMESTIC = "domestic"
     INTERNATIONAL = "international"
     FEE = "fee"
@@ -30,26 +32,27 @@ class TransactionType(Enum):
 @dataclass
 class Transaction:
     """A single bank statement transaction."""
+
     date: date
     description: str
     amount_brl: Decimal
-    category: Optional[str] = None
+    category: str | None = None
     transaction_type: TransactionType = TransactionType.DOMESTIC
-    currency_orig: Optional[str] = None
-    amount_orig: Optional[Decimal] = None
-    exchange_rate: Optional[Decimal] = None
+    currency_orig: str | None = None
+    amount_orig: Decimal | None = None
+    exchange_rate: Decimal | None = None
     confidence_score: float = 1.0
-    source_extractor: Optional[ExtractorType] = None
-    raw_text: Optional[str] = None
-    
+    source_extractor: ExtractorType | None = None
+    raw_text: str | None = None
+
     def __post_init__(self):
         """Validate and normalize transaction data."""
         if not isinstance(self.amount_brl, Decimal):
             self.amount_brl = Decimal(str(self.amount_brl))
-        
+
         if self.amount_orig and not isinstance(self.amount_orig, Decimal):
             self.amount_orig = Decimal(str(self.amount_orig))
-            
+
         if self.exchange_rate and not isinstance(self.exchange_rate, Decimal):
             self.exchange_rate = Decimal(str(self.exchange_rate))
 
@@ -57,70 +60,81 @@ class Transaction:
 @dataclass
 class PipelineResult:
     """Result from a single extraction pipeline."""
-    transactions: List[Transaction]
+
+    transactions: list[Transaction]
     confidence_score: float
     pipeline_name: ExtractorType
     processing_time_ms: float
-    raw_data: Optional[Dict[str, Any]] = None
-    error_message: Optional[str] = None
+    raw_data: dict[str, Any] | None = None
+    error_message: str | None = None
     page_count: int = 0
-    
+
     @property
     def success(self) -> bool:
         """Whether the extraction was successful."""
         return self.error_message is None and len(self.transactions) > 0
-    
+
     @property
     def total_amount_brl(self) -> Decimal:
         """Sum of all transaction amounts."""
         return sum(t.amount_brl for t in self.transactions)
-    
+
     @property
     def domestic_count(self) -> int:
         """Count of domestic transactions."""
-        return sum(1 for t in self.transactions if t.transaction_type == TransactionType.DOMESTIC)
-    
+        return sum(
+            1
+            for t in self.transactions
+            if t.transaction_type == TransactionType.DOMESTIC
+        )
+
     @property
     def international_count(self) -> int:
         """Count of international transactions."""
-        return sum(1 for t in self.transactions if t.transaction_type == TransactionType.INTERNATIONAL)
+        return sum(
+            1
+            for t in self.transactions
+            if t.transaction_type == TransactionType.INTERNATIONAL
+        )
 
 
 @dataclass
 class ValidationResult:
     """Result from semantic validation against golden data."""
+
     cell_accuracy: float
     transaction_count_match: bool
     total_amount_match: bool
     amount_difference_brl: Decimal
-    mismatched_cells: List[str]
+    mismatched_cells: list[str]
     precision: float
     recall: float
     f1_score: float
     true_positives: int
     false_positives: int
     false_negatives: int
-    
+
     @property
     def is_valid(self) -> bool:
         """Whether validation passes all thresholds."""
         return (
-            self.cell_accuracy >= 0.95 and
-            self.transaction_count_match and
-            abs(self.amount_difference_brl) <= Decimal("0.05")
+            self.cell_accuracy >= 0.95
+            and self.transaction_count_match
+            and abs(self.amount_difference_brl) <= Decimal("0.05")
         )
 
 
 @dataclass
 class EnsembleResult:
     """Result from ensemble merging of multiple pipelines."""
-    final_transactions: List[Transaction]
-    contributing_pipelines: List[ExtractorType]
+
+    final_transactions: list[Transaction]
+    contributing_pipelines: list[ExtractorType]
     confidence_score: float
-    pipeline_results: List[PipelineResult]
+    pipeline_results: list[PipelineResult]
     merge_strategy: str
     conflicts_resolved: int
-    
+
     @property
     def total_amount_brl(self) -> Decimal:
         """Sum of all final transaction amounts."""
@@ -130,6 +144,7 @@ class EnsembleResult:
 @dataclass
 class RunMetrics:
     """Metrics for a complete pipeline run."""
+
     run_id: str
     pdf_sha256: str
     pdf_name: str
@@ -150,18 +165,19 @@ class RunMetrics:
 @dataclass
 class CostEstimate:
     """Cost estimation for extraction operations."""
+
     textract_pages: int = 0
     azure_pages: int = 0
     google_pages: int = 0
     textract_cost_usd: float = 0.0
     azure_cost_usd: float = 0.0
     google_cost_usd: float = 0.0
-    
+
     @property
     def total_cost_usd(self) -> float:
         """Total estimated cost across all cloud providers."""
         return self.textract_cost_usd + self.azure_cost_usd + self.google_cost_usd
-    
+
     @property
     def total_pages(self) -> int:
         """Total pages to be processed via cloud OCR."""

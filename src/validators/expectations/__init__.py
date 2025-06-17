@@ -8,6 +8,6 @@ from .transaction_suite import (
 
 __all__ = [
     "TransactionExpectationSuite",
-    "create_transaction_checkpoint", 
+    "create_transaction_checkpoint",
     "quick_validate",
 ]
