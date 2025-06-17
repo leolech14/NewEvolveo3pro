@@ -1,273 +1,244 @@
-"""Brazilian banking patterns and regex definitions."""
+"""Enhanced pattern recognition from proven statement_refinery patterns."""
 
 from __future__ import annotations
 
+import hashlib
 import re
-from decimal import Decimal
-from re import Pattern
-from typing import Final
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from typing import Final, Optional, Tuple
 
-# Brazilian date patterns
-RE_DATE_BR: Final[Pattern[str]] = re.compile(
-    r"(?P<day>\d{1,2})/(?P<month>\d{1,2})(?:/(?P<year>\d{2,4}))?"
+# Core posting patterns from proven codex.py
+RE_POSTING_NATIONAL: Final[re.Pattern[str]] = re.compile(
+    r"^(?P<date>\d{2}/\d{2})\s+(?P<desc>.+?)\s+(?P<amount>-?\d{1,3}(?:\.\d{3})*,\d{2})$"
 )
 
-# Brazilian amount patterns - handles both thousand and decimal separators
-RE_AMOUNT_BR: Final[Pattern[str]] = re.compile(
-    r"(?P<sign>[-+]?)(?P<amount>\d{1,3}(?:\.\d{3})*(?:,\d{2})?)"
+RE_POSTING_FX: Final[re.Pattern[str]] = re.compile(
+    r"^(?P<date>\d{2}/\d{2})\s+(?P<desc>.+?)\s+"
+    r"(?P<orig>-?\d{1,3}(?:\.\d{3})*,\d{2})\s+"
+    r"(?P<brl>-?\d{1,3}(?:\.\d{3})*,\d{2})$"
 )
 
-# Itaú specific patterns
-RE_POSTING_NATIONAL: Final[Pattern[str]] = re.compile(
-    r"^[~g]*\s*(?P<date>\d{1,2}/\d{1,2})\s+(?P<desc>.+?)\s+(?P<amt>-?\d{1,3}(?:\.\d{3})*,\d{2})$",
-    re.MULTILINE,
+RE_PAYMENT: Final[re.Pattern[str]] = re.compile(
+    r"^(?P<date>\d{1,3}/\d{1,2})\s+PAGAMENTO.*?(?P<code>\d{4})\s*[-\t ]+(?P<amt>-\s*[\d.,]+)\s*$",
+    re.IGNORECASE
 )
 
-RE_POSTING_FX: Final[Pattern[str]] = re.compile(
-    r"^(?P<date>\d{1,2}/\d{1,2})\s+(?P<desc>.+?)\s+(?P<amt_orig>\d{1,3}(?:\.\d{3})*,\d{2})\s+(?P<amt_brl>\d{1,3}(?:\.\d{3})*,\d{2})$",
-    re.MULTILINE,
-)
+RE_INSTALLMENT: Final[re.Pattern[str]] = re.compile(r"(\d{1,2})/(\d{1,2})")
+RE_CARD_FINAL: Final[re.Pattern[str]] = re.compile(r"final (\d{4})")
 
-# Statement total patterns
-RE_TOTAL_TEXTRACT: Final[Pattern[str]] = re.compile(
-    r"O total da sua fatura é: R\$ ([\d.,]+)"
-)
+# FX and IOF patterns
+RE_DOLAR: Final[re.Pattern[str]] = re.compile(r"^D[óo]lar de Convers[ãa]o.*?(\d+,\d{4})")
+RE_IOF_LINE: Final[re.Pattern[str]] = re.compile(r"Repasse de IOF", re.IGNORECASE)
+RE_BRL: Final[re.Pattern[str]] = re.compile(r"-?\s*\d{1,3}(?:\.\d{3})*,\d{2}")
 
-RE_TOTAL_GENERIC: Final[Pattern[str]] = re.compile(
-    r"(?:Total|TOTAL).*?R\$?\s*([\d.,]+)"
-)
-
-# Header/footer patterns to ignore
-RE_HEADER_PATTERNS: Final[list[Pattern[str]]] = [
-    re.compile(r"^Itaú Unibanco.*", re.IGNORECASE),
-    re.compile(r"^CARTÃO DE CRÉDITO.*", re.IGNORECASE),
-    re.compile(r"^Data.*Histórico.*Valor", re.IGNORECASE),
-    re.compile(r"^Página \d+ de \d+", re.IGNORECASE),
-    re.compile(r"^\d+/\d+$"),  # Page numbers
-]
-
-RE_FOOTER_PATTERNS: Final[list[Pattern[str]]] = [
-    re.compile(r"^Atendimento.*", re.IGNORECASE),
-    re.compile(r"^www\.itau\.com\.br", re.IGNORECASE),
-    re.compile(r"^Central de Relacionamento", re.IGNORECASE),
-]
-
-# Currency patterns
-RE_CURRENCY: Final[Pattern[str]] = re.compile(
-    r"(?P<currency>USD|EUR|BRL|R\$)\s*(?P<amount>[\d.,]+)"
-)
-
-# Category classification patterns
-CATEGORY_PATTERNS: Final[dict[str, list[Pattern[str]]]] = {
-    "restaurant": [
-        re.compile(r"RESTAURANTE", re.IGNORECASE),
-        re.compile(r"LANCHONETE", re.IGNORECASE),
-        re.compile(r"BAR\s+", re.IGNORECASE),
-        re.compile(r"CAFE", re.IGNORECASE),
-    ],
-    "supermarket": [
-        re.compile(r"SUPERMERCADO", re.IGNORECASE),
-        re.compile(r"MERCADO", re.IGNORECASE),
-        re.compile(r"PAGUE MENOS", re.IGNORECASE),
-        re.compile(r"CARREFOUR", re.IGNORECASE),
-    ],
-    "fuel": [
-        re.compile(r"POSTO", re.IGNORECASE),
-        re.compile(r"COMBUSTIVEL", re.IGNORECASE),
-        re.compile(r"SHELL", re.IGNORECASE),
-        re.compile(r"PETROBRAS", re.IGNORECASE),
-    ],
-    "transport": [
-        re.compile(r"UBER", re.IGNORECASE),
-        re.compile(r"99", re.IGNORECASE),
-        re.compile(r"TAXI", re.IGNORECASE),
-        re.compile(r"METRO", re.IGNORECASE),
-    ],
-    "shopping": [
-        re.compile(r"SHOPPING", re.IGNORECASE),
-        re.compile(r"LOJA", re.IGNORECASE),
-        re.compile(r"MAGAZINE", re.IGNORECASE),
-    ],
-    "online": [
-        re.compile(r"AMAZON", re.IGNORECASE),
-        re.compile(r"MERCADO LIVRE", re.IGNORECASE),
-        re.compile(r"GOOGLE", re.IGNORECASE),
-        re.compile(r"NETFLIX", re.IGNORECASE),
-    ],
-    "bank_fee": [
-        re.compile(r"TARIFA", re.IGNORECASE),
-        re.compile(r"TAXA", re.IGNORECASE),
-        re.compile(r"ANUIDADE", re.IGNORECASE),
-        re.compile(r"IOF", re.IGNORECASE),
-    ],
-    "payment": [
-        re.compile(r"PAGAMENTO", re.IGNORECASE),
-        re.compile(r"PAG ", re.IGNORECASE),
-        re.compile(r"DEBITO", re.IGNORECASE),
-    ],
+# Category classification patterns (20+ categories)
+CATEGORY_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
+    "ALIMENTACAO": re.compile(r"(RESTAURANTE|PADARIA|MERCADO|SUPERMERCADO|LANCHONETE|FOOD|MCDONALDS|BURGER|PIZZA)", re.IGNORECASE),
+    "TRANSPORTE": re.compile(r"(UBER|99|TAXI|COMBUSTIVEL|POSTO|GASOLINA|ESTACIONAMENTO|METRO|BUS)", re.IGNORECASE),
+    "FARMACIA": re.compile(r"(FARMACIA|DROGARIA|REMEDIOS?|MEDICINA)", re.IGNORECASE),
+    "VESTUARIO": re.compile(r"(LOJA|ROUPA|CALCADO|SAPATO|VESTUARIO|MODA|ZARA|H&M)", re.IGNORECASE),
+    "ENTRETENIMENTO": re.compile(r"(CINEMA|TEATRO|NETFLIX|SPOTIFY|STEAM|GAME|INGRESSO)", re.IGNORECASE),
+    "SUPERMERCADO": re.compile(r"(SUPERMERCADO|MERCADO|CARREFOUR|EXTRA|WALMART)", re.IGNORECASE),
+    "SAUDE": re.compile(r"(HOSPITAL|CLINICA|MEDICO|DENTISTA|LABORATORIO|SAUDE)", re.IGNORECASE),
+    "EDUCACAO": re.compile(r"(ESCOLA|CURSO|UNIVERSIDADE|FACULDADE|EDUCACAO|LIVRO)", re.IGNORECASE),
+    "PAGAMENTO": re.compile(r"PAGAMENTO", re.IGNORECASE),
+    "FX": re.compile(r"(PAYPAL|AMAZON|NETFLIX|SPOTIFY|USD|EUR|INTERNACIONAL)", re.IGNORECASE),
+    "CASH": re.compile(r"(SAQUE|ATM|CAIXA|CASH)", re.IGNORECASE),
+    "ENERGIA": re.compile(r"(ENERGIA|ELETRICA|CONTA\s+LUZ)", re.IGNORECASE),
+    "TELEFONE": re.compile(r"(TELEFONE|CELULAR|CLARO|VIVO|TIM|OPERADORA)", re.IGNORECASE),
+    "SEGURO": re.compile(r"(SEGURO|INSURANCE)", re.IGNORECASE),
+    "BANCO": re.compile(r"(BANCO|TARIFA|TAXA|JUROS|FINANCIAMENTO)", re.IGNORECASE),
+    "HOTEL": re.compile(r"(HOTEL|POUSADA|HOSPEDAGEM|BOOKING)", re.IGNORECASE),
+    "DECORACAO": re.compile(r"(CASA|DECORACAO|MOVEIS|IKEA|MAGAZINE)", re.IGNORECASE),
+    "BELEZA": re.compile(r"(SALAO|BELEZA|CABELEIREIRO|ESTETICA)", re.IGNORECASE),
+    "PETS": re.compile(r"(PET|VETERINARIO|ANIMAL|RACAO)", re.IGNORECASE),
+    "OUTROS": re.compile(r".*", re.IGNORECASE),  # Catch-all
 }
+
+# Text cleaning patterns
+LEAD_SYM: Final[str] = ">@§$Z)_•*®«» "
+RE_DROP_HDR: Final[re.Pattern[str]] = re.compile(
+    r"^(Total |Lançamentos|Limites|Encargos|Próxima fatura|Demais faturas|"
+    r"Parcelamento da fatura|Simulação|Pontos|Cashback|Outros lançamentos|"
+    r"Limite total de crédito|Fatura anterior|Saldo financiado|"
+    r"Produtos e serviços|Tarifa|Compras parceladas - próximas faturas)",
+    re.IGNORECASE
+)
+
+
+def strip_pua(text: str) -> str:
+    """Remove Private Use Area glyphs (icons)."""
+    return re.sub(r"[\ue000-\uf8ff]", "", text)
+
+
+def clean_line(raw: str) -> str:
+    """Clean line with proven patterns from codex.py."""
+    raw = strip_pua(raw)
+    raw = raw.lstrip(LEAD_SYM).replace("_", " ")
+    raw = re.sub(r"\s{2,}", " ", raw)
+    return raw.strip()
 
 
 def normalize_amount(amount_str: str) -> Decimal:
-    """
-    Convert Brazilian amount format to Decimal.
-
-    Examples:
-        "1.234,56" -> Decimal("1234.56")
-        "156,78" -> Decimal("156.78")
-        "1,234.56" -> Decimal("1234.56") (US format)
-    """
-    if not amount_str:
-        return Decimal("0")
-
-    # Remove currency symbols and whitespace
-    cleaned = re.sub(r"[R$\s]", "", amount_str)
-
-    # Handle negative signs
-    sign = -1 if cleaned.startswith("-") else 1
-    cleaned = cleaned.lstrip("-+")
-
-    # Check if this looks like Brazilian format (comma as decimal separator)
-    if "," in cleaned and "." in cleaned:
-        # Both separators present - assume Brazilian format
-        # Remove dots (thousand separator), replace comma with dot
-        cleaned = cleaned.replace(".", "").replace(",", ".")
-    elif "," in cleaned and cleaned.count(",") == 1:
-        # Only comma - check position to determine if it's decimal separator
-        comma_pos = cleaned.rfind(",")
-        if len(cleaned) - comma_pos == 3:  # Comma followed by 2 digits
-            cleaned = cleaned.replace(",", ".")
-    elif "." in cleaned and cleaned.count(".") > 1:
-        # Multiple dots - thousand separators, remove all but last
-        parts = cleaned.split(".")
-        if len(parts[-1]) == 2:  # Last part is 2 digits - decimal
-            cleaned = "".join(parts[:-1]) + "." + parts[-1]
-        else:
-            cleaned = "".join(parts)
-
+    """Normalize Brazilian currency format to Decimal."""
     try:
-        return Decimal(cleaned) * sign
-    except:
+        # Remove spaces and non-digit characters except comma and minus
+        cleaned = re.sub(r"[^\d,\-]", "", amount_str.replace(" ", ""))
+        # Convert dots and commas to proper decimal format
+        cleaned = cleaned.replace(".", "").replace(",", ".")
+        return Decimal(cleaned)
+    except (InvalidOperation, ValueError):
         return Decimal("0")
 
 
-def normalize_date(date_str: str, current_year: int = 2024) -> str:
-    """
-    Normalize Brazilian date to YYYY-MM-DD format.
-
-    Examples:
-        "15/03" -> "2024-03-15"
-        "15/03/24" -> "2024-03-15"
-        "15/03/2024" -> "2024-03-15"
-    """
-    match = RE_DATE_BR.match(date_str.strip())
-    if not match:
-        return date_str
-
-    day = int(match.group("day"))
-    month = int(match.group("month"))
-    year_str = match.group("year")
-
-    if year_str:
-        year = int(year_str)
-        if year < 100:  # 2-digit year
-            year = 2000 + year if year < 50 else 1900 + year
-    else:
-        year = current_year
-
-    return f"{year:04d}-{month:02d}-{day:02d}"
+def extract_card_number(description: str) -> Optional[str]:
+    """Extract card number from description."""
+    match = RE_CARD_FINAL.search(description)
+    return match.group(1) if match else None
 
 
-def classify_transaction(description: str) -> str:
-    """Classify transaction based on description patterns."""
-    description_upper = description.upper()
-
-    for category, patterns in CATEGORY_PATTERNS.items():
-        for pattern in patterns:
-            if pattern.search(description_upper):
-                return category
-
-    return "other"
-
-
-def is_header_line(line: str) -> bool:
-    """Check if line is a header that should be ignored."""
-    return any(pattern.match(line.strip()) for pattern in RE_HEADER_PATTERNS)
+def extract_installment_info(description: str) -> Tuple[Optional[int], Optional[int]]:
+    """Extract installment sequence and total."""
+    match = RE_INSTALLMENT.search(description)
+    if match:
+        try:
+            seq = int(match.group(1))
+            total = int(match.group(2))
+            return seq, total
+        except ValueError:
+            pass
+    return None, None
 
 
-def is_footer_line(line: str) -> bool:
-    """Check if line is a footer that should be ignored."""
-    return any(pattern.match(line.strip()) for pattern in RE_FOOTER_PATTERNS)
+def extract_fx_rate(text: str) -> Optional[Decimal]:
+    """Extract FX rate from dollar conversion line."""
+    match = RE_DOLAR.search(text)
+    if match:
+        try:
+            rate_str = match.group(1).replace(",", ".")
+            return Decimal(rate_str)
+        except (InvalidOperation, ValueError):
+            pass
+    return None
 
 
-def extract_currency_amounts(text: str) -> list[tuple[str, Decimal]]:
-    """Extract all currency amounts from text."""
-    matches = []
-    for match in RE_CURRENCY.finditer(text):
-        currency = match.group("currency")
-        amount_str = match.group("amount")
-        amount = normalize_amount(amount_str)
-        matches.append((currency, amount))
-    return matches
-
-
-def is_international_transaction(description: str, amount_orig: str = None) -> bool:
-    """Determine if transaction is international based on description and amount."""
-    # Check for international indicators
-    intl_indicators = [
-        "USD",
-        "EUR",
-        "DOLAR",
-        "EURO",
-        "FOREIGN",
-        "INTERNATIONAL",
-        "PAYPAL",
-        "AMAZON.COM",
-        "UBER ",
-        "SPOTIFY",
-        "NETFLIX",
+def extract_merchant_city(description: str) -> Optional[str]:
+    """Extract merchant city from description."""
+    # Common patterns for city extraction
+    city_patterns = [
+        r"\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\s+BR\b",  # City BR
+        r"\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\s*$",     # City at end
+        r"\s+([A-Z]{2,}(?:\s+[A-Z]{2,})*)\s+\d",   # City before numbers
     ]
+    
+    for pattern in city_patterns:
+        match = re.search(pattern, description)
+        if match:
+            city = match.group(1).strip()
+            # Filter out common non-city terms
+            if city not in ["FINAL", "CARD", "CARTAO", "DEBITO", "CREDITO"]:
+                return city
+    
+    return None
 
+
+def classify_category(description: str) -> str:
+    """Classify transaction category using proven patterns."""
     description_upper = description.upper()
-    for indicator in intl_indicators:
-        if indicator in description_upper:
-            return True
-
-    # Check if original amount is present (FX transaction)
-    if amount_orig:
-        return True
-
-    return False
+    
+    for category, pattern in CATEGORY_PATTERNS.items():
+        if pattern.search(description_upper):
+            return category
+    
+    return "OUTROS"
 
 
-# Confidence scoring weights
-CONFIDENCE_WEIGHTS: Final[dict[str, float]] = {
-    "date_match": 0.3,
-    "amount_match": 0.4,
-    "description_quality": 0.2,
-    "pattern_match": 0.1,
-}
+def generate_ledger_hash(date_str: str, description: str, amount: Decimal) -> str:
+    """Generate unique ledger hash for transaction."""
+    hash_data = f"{date_str}_{description}_{amount}"
+    return hashlib.md5(hash_data.encode()).hexdigest()[:8]
 
 
-def calculate_confidence(
-    has_date: bool, has_amount: bool, description_length: int, pattern_matched: bool
-) -> float:
+def is_payment_transaction(description: str) -> bool:
+    """Check if transaction is a payment."""
+    return bool(RE_PAYMENT.search(description))
+
+
+def is_fx_transaction(description: str) -> bool:
+    """Check if transaction is foreign exchange."""
+    return bool(RE_POSTING_FX.search(description))
+
+
+def detect_transaction_type(description: str, amount: Decimal) -> str:
+    """Detect transaction type based on patterns."""
+    if is_payment_transaction(description):
+        return "PAGAMENTO"
+    elif is_fx_transaction(description):
+        return "FX"
+    elif amount < 0:
+        return "COMPRA"
+    else:
+        return "CREDITO"
+
+
+def calculate_confidence(description: str, amount: Decimal, parsed_fields: int = 0) -> float:
     """Calculate confidence score for extracted transaction."""
-    score = 0.0
+    confidence = 0.5  # Base confidence
+    
+    # Boost for well-formed amounts
+    if amount != 0:
+        confidence += 0.2
+    
+    # Boost for meaningful descriptions
+    if description and len(description) > 5:
+        confidence += 0.2
+    
+    # Boost for parsed fields
+    confidence += min(parsed_fields * 0.02, 0.1)
+    
+    return min(confidence, 1.0)
 
-    if has_date:
-        score += CONFIDENCE_WEIGHTS["date_match"]
 
-    if has_amount:
-        score += CONFIDENCE_WEIGHTS["amount_match"]
+def classify_transaction(description: str, amount: Decimal) -> dict:
+    """Classify transaction with category and type."""
+    return {
+        "category": classify_category(description),
+        "type": detect_transaction_type(description, amount),
+        "confidence": calculate_confidence(description, amount)
+    }
 
-    # Description quality based on length
-    if description_length > 5:
-        score += CONFIDENCE_WEIGHTS["description_quality"]
-    elif description_length > 0:
-        score += CONFIDENCE_WEIGHTS["description_quality"] * 0.5
 
-    if pattern_matched:
-        score += CONFIDENCE_WEIGHTS["pattern_match"]
+def is_international_transaction(description: str) -> bool:
+    """Check if transaction is international."""
+    international_indicators = [
+        "USD", "EUR", "GBP", "PAYPAL", "AMAZON", "NETFLIX", 
+        "SPOTIFY", "INTERNACIONAL", "FOREIGN"
+    ]
+    description_upper = description.upper()
+    return any(indicator in description_upper for indicator in international_indicators)
 
-    return min(score, 1.0)
+
+def normalize_date(date_str: str, ref_year: int = 2024, ref_month: int = 10) -> str:
+    """Normalize date string to YYYY-MM-DD format."""
+    if not date_str:
+        return ""
+    
+    # Pattern for DD/MM or DD/MM/YYYY
+    date_pattern = re.compile(r"(\d{1,2})/(\d{1,2})(?:/(\d{4}))?")
+    match = date_pattern.match(date_str.strip())
+    
+    if not match:
+        return date_str  # Return as-is if no match
+    
+    day = int(match.group(1))
+    month = int(match.group(2))
+    year = int(match.group(3)) if match.group(3) else ref_year
+    
+    # Validate date components
+    if month < 1 or month > 12:
+        return date_str
+    if day < 1 or day > 31:
+        return date_str
+    
+    return f"{year:04d}-{month:02d}-{day:02d}"

@@ -31,30 +31,64 @@ class TransactionType(Enum):
 
 @dataclass
 class Transaction:
-    """A single bank statement transaction."""
+    """A single bank statement transaction with full metadata."""
 
+    # Core transaction data
     date: date
     description: str
     amount_brl: Decimal
-    category: str | None = None
+    
+    # Enhanced metadata fields matching golden CSV structure
+    card_last4: str = "0000"
+    installment_seq: int = 0
+    installment_tot: int = 0
+    fx_rate: Decimal = Decimal("0.00")
+    iof_brl: Decimal = Decimal("0.00")
+    category: str = "DIVERSOS"
+    merchant_city: str = ""
+    ledger_hash: str = ""
+    prev_bill_amount: Decimal = Decimal("0.00")
+    interest_amount: Decimal = Decimal("0.00")
+    amount_orig: Decimal = Decimal("0.00")
+    currency_orig: str = ""
+    amount_usd: Decimal = Decimal("0.00")
+    
+    # System fields
     transaction_type: TransactionType = TransactionType.DOMESTIC
-    currency_orig: str | None = None
-    amount_orig: Decimal | None = None
-    exchange_rate: Decimal | None = None
     confidence_score: float = 1.0
     source_extractor: ExtractorType | None = None
     raw_text: str | None = None
 
     def __post_init__(self):
         """Validate and normalize transaction data."""
+        # Convert amounts to Decimal
         if not isinstance(self.amount_brl, Decimal):
             self.amount_brl = Decimal(str(self.amount_brl))
-
-        if self.amount_orig and not isinstance(self.amount_orig, Decimal):
+        if not isinstance(self.fx_rate, Decimal):
+            self.fx_rate = Decimal(str(self.fx_rate))
+        if not isinstance(self.iof_brl, Decimal):
+            self.iof_brl = Decimal(str(self.iof_brl))
+        if not isinstance(self.prev_bill_amount, Decimal):
+            self.prev_bill_amount = Decimal(str(self.prev_bill_amount))
+        if not isinstance(self.interest_amount, Decimal):
+            self.interest_amount = Decimal(str(self.interest_amount))
+        if not isinstance(self.amount_orig, Decimal):
             self.amount_orig = Decimal(str(self.amount_orig))
-
-        if self.exchange_rate and not isinstance(self.exchange_rate, Decimal):
-            self.exchange_rate = Decimal(str(self.exchange_rate))
+        if not isinstance(self.amount_usd, Decimal):
+            self.amount_usd = Decimal(str(self.amount_usd))
+        
+        # Generate ledger hash if not provided
+        if not self.ledger_hash:
+            from ..core.patterns import generate_ledger_hash
+            self.ledger_hash = generate_ledger_hash(
+                self.date.isoformat(), 
+                self.description, 
+                self.amount_brl
+            )
+        
+        # Set amount_usd for USD transactions
+        if self.currency_orig == "USD" and self.amount_orig > 0:
+            self.amount_usd = self.amount_orig
 
 
 @dataclass

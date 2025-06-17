@@ -15,7 +15,9 @@ from ..core.confidence import (
     get_calibrator,
     merge_confidence_scores,
 )
+from ..core.metrics import get_metrics
 from ..core.models import EnsembleResult, ExtractorType, PipelineResult, Transaction
+from ..enrichment.pipeline import EnrichmentPipeline
 from ..extractors import (
     AzureDocIntelligenceExtractor,
     CamelotExtractor,
@@ -29,6 +31,7 @@ class EnsembleMerger:
 
     def __init__(self):
         self.extractors = {}
+        self.enrichment_pipeline = EnrichmentPipeline()
 
         # Initialize extractors that are available
         try:
@@ -55,7 +58,7 @@ class EnsembleMerger:
 
         self.calibrator = get_calibrator()
         self.metrics = get_metrics()
-        self.cost_guard = CostGuard()
+        # self.cost_guard = CostGuard()  # TODO: Implement cost guard
 
     async def extract_with_ensemble(
         self,
@@ -106,19 +109,36 @@ class EnsembleMerger:
             successful_results
         )
 
-        # Calculate ensemble confidence
-        ensemble_confidence = self._calculate_ensemble_confidence(
-            successful_results, final_transactions
-        )
-
-        return EnsembleResult(
+        # Apply Phase 2 enrichment pipeline
+        enriched_result = EnsembleResult(
             final_transactions=final_transactions,
             contributing_pipelines=[r.pipeline_name for r in successful_results],
-            confidence_score=ensemble_confidence,
+            confidence_score=0.0,  # Will be updated by enrichment
             pipeline_results=pipeline_results,
             merge_strategy=merge_strategy,
             conflicts_resolved=conflicts,
         )
+        
+        # Read PDF text for enrichment
+        pdf_text = None
+        source_lines = None
+        try:
+            import pdfplumber
+            with pdfplumber.open(str(pdf_path)) as pdf:
+                pdf_text = "\n".join(
+                    page.extract_text() for page in pdf.pages 
+                    if page.extract_text()
+                )
+                source_lines = pdf_text.splitlines()
+        except Exception as e:
+            print(f"Could not read PDF for enrichment: {e}")
+        
+        # Apply enrichment
+        enriched_result = await self.enrichment_pipeline.enrich_extraction_result(
+            enriched_result, pdf_text, source_lines
+        )
+
+        return enriched_result
 
     def _auto_select_extractors(self, pdf_path: Path) -> list[ExtractorType]:
         """Auto-select extractors based on PDF characteristics."""
