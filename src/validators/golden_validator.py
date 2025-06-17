@@ -192,11 +192,13 @@ class GoldenValidator:
                 "transaction_count": len(transactions),
                 "total_amount_brl": float(total_amount),
                 "date_range": (
-                    min(t.date for t in transactions).isoformat(),
-                    max(t.date for t in transactions).isoformat(),
-                )
-                if transactions
-                else None,
+                    (
+                        min(t.date for t in transactions).isoformat(),
+                        max(t.date for t in transactions).isoformat(),
+                    )
+                    if transactions
+                    else None
+                ),
                 "unique_categories": len(categories),
                 "categories": sorted(categories),
             }
@@ -223,9 +225,11 @@ class GoldenValidator:
                     "description": t.description,
                     "amount_brl": str(t.amount_brl),
                     "category": t.category or "",
-                    "transaction_type": t.transaction_type.value
-                    if hasattr(t.transaction_type, "value")
-                    else str(t.transaction_type),
+                    "transaction_type": (
+                        t.transaction_type.value
+                        if hasattr(t.transaction_type, "value")
+                        else str(t.transaction_type)
+                    ),
                 }
             )
 

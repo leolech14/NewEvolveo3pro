@@ -277,9 +277,11 @@ class TransactionExpectationSuite:
                     ),  # For numeric operations
                     "category": transaction.category or "",
                     "confidence_score": transaction.confidence_score,
-                    "transaction_type": transaction.transaction_type.value
-                    if hasattr(transaction.transaction_type, "value")
-                    else str(transaction.transaction_type),
+                    "transaction_type": (
+                        transaction.transaction_type.value
+                        if hasattr(transaction.transaction_type, "value")
+                        else str(transaction.transaction_type)
+                    ),
                 }
             )
 

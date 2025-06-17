@@ -45,8 +45,10 @@ class PdfplumberExtractor(BaseExtractor):
             )
 
         try:
+
             def extraction_func():
                 return self._extract_with_pdfplumber(pdf_path)
+
             (transactions, raw_data, page_count), duration_ms = self._time_extraction(
                 extraction_func
             )

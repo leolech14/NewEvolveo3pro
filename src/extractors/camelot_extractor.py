@@ -34,8 +34,10 @@ class CamelotExtractor(BaseExtractor):
     def extract(self, pdf_path: Path) -> PipelineResult:
         """Extract transactions using Camelot table detection."""
         try:
+
             def extraction_func():
                 return self._extract_with_camelot(pdf_path)
+
             (transactions, raw_data, page_count), duration_ms = self._time_extraction(
                 extraction_func
             )
@@ -101,9 +103,9 @@ class CamelotExtractor(BaseExtractor):
 
         raw_data = {
             "extractor": "camelot",
-            "lattice_tables": len(lattice_tables)
-            if "lattice_tables" in locals()
-            else 0,
+            "lattice_tables": (
+                len(lattice_tables) if "lattice_tables" in locals() else 0
+            ),
             "stream_tables": len(stream_tables) if "stream_tables" in locals() else 0,
             "total_transactions": len(transactions),
             "page_count": page_count,

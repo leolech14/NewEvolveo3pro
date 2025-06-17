@@ -56,9 +56,9 @@ def transactions_to_dataframe(transactions: list[Transaction]) -> pd.DataFrame:
                 "amount_brl": f"{t.amount_brl:.2f}".replace(".", ","),
                 "category": t.category or "",
                 "confidence": t.confidence_score,
-                "source": t.source_extractor.value
-                if t.source_extractor
-                else "ensemble",
+                "source": (
+                    t.source_extractor.value if t.source_extractor else "ensemble"
+                ),
             }
         )
     return pd.DataFrame(data)
@@ -242,13 +242,15 @@ def main():
 
     # Editable transactions table
     st.header("📝 Edit Transactions")
-    st.markdown("""
+    st.markdown(
+        """
     **Red-bordered cells** have low confidence (<85%). Review and edit as needed.
 
     - **Date**: DD/MM/YYYY format
     - **Amount**: Brazilian format (use comma for decimals)
     - **Category**: Optional classification
-    """)
+    """
+    )
 
     if st.session_state.transactions_df is not None:
         # Configuration options

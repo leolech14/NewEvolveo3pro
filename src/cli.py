@@ -314,9 +314,11 @@ def list_golden() -> None:
             pdf_name,
             str(stats["transaction_count"]),
             f"R$ {stats['total_amount_brl']:,.2f}",
-            f"{stats['date_range'][0]} to {stats['date_range'][1]}"
-            if stats["date_range"]
-            else "N/A",
+            (
+                f"{stats['date_range'][0]} to {stats['date_range'][1]}"
+                if stats["date_range"]
+                else "N/A"
+            ),
             str(stats["unique_categories"]),
         )
 
@@ -405,9 +407,11 @@ def _display_extraction_result(result, pdf_name: str) -> None:
     for transaction in result.final_transactions:
         table.add_row(
             transaction.date.strftime("%d/%m/%Y"),
-            transaction.description[:50] + "..."
-            if len(transaction.description) > 50
-            else transaction.description,
+            (
+                transaction.description[:50] + "..."
+                if len(transaction.description) > 50
+                else transaction.description
+            ),
             f"R$ {transaction.amount_brl:,.2f}",
             transaction.category or "N/A",
             f"{transaction.confidence_score:.1%}",
@@ -561,9 +565,11 @@ def _save_transactions_csv(transactions: list, output_file: Path) -> None:
                 "description": t.description,
                 "amount_brl": f"{t.amount_brl:.2f}".replace(".", ","),
                 "category": t.category or "",
-                "transaction_type": t.transaction_type.value
-                if hasattr(t.transaction_type, "value")
-                else str(t.transaction_type),
+                "transaction_type": (
+                    t.transaction_type.value
+                    if hasattr(t.transaction_type, "value")
+                    else str(t.transaction_type)
+                ),
                 "confidence": f"{t.confidence_score:.3f}",
             }
         )
