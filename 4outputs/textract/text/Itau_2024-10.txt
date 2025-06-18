@@ -1,0 +1,20 @@
+Textract Extractor Output
+PDF: Itau_2024-10.pdf
+Transactions found: 13
+Total blocks: 1000
+Table count: 4
+==================================================
+
+Pagamento efetuado em 23/09/2024 | Unknown transaction | -71.543,24
+ | Saldo financiado | 0,00
+ | E Encargos (financiamento + moratório) | 3.822,12
+ | Lançamentos atuais | 4.772,90
+ | Total desta fatura | 8.595,02
+ | Valor total financiado | 100,00%
+ | Encargos | R$ 447,69
+ | Unknown transaction | R$ 53,80
+ | Total a pagar | R$ 9.096,51
+ | Valor total financiado | 100,00%
+ | Valor solicitado | 98,31 %
+ | Unknown transaction | 1,69 %
+ | Total a pagar | R$ 11.276,87

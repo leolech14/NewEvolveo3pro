@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import time
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
+import os
 
 try:
     import boto3
     from botocore.exceptions import ClientError, NoCredentialsError
 except ImportError:
     boto3 = None
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
 
 from ..core.models import ExtractorType, PipelineResult, Transaction, TransactionType
 from ..core.patterns import (
@@ -26,12 +32,21 @@ from .base_extractor import BaseExtractor, ExtractionError
 class TextractExtractor(BaseExtractor):
     """AWS Textract-based extraction with async job handling."""
 
-    def __init__(self, region_name: str = "us-east-1"):
+    def __init__(self, region_name: str = "us-east-1", default_s3_bucket: str | None = None):
         super().__init__(ExtractorType.TEXTRACT)
         if boto3 is None:
             raise ImportError("boto3 is required for Textract extraction")
 
+        # Load environment variables
+        if load_dotenv:
+            load_dotenv()
+        
         self.region_name = region_name
+        self.default_s3_bucket = (
+            default_s3_bucket
+            or os.getenv("TEXTRACT_S3_BUCKET")
+            or os.getenv("AWS_TEXTRACT_S3_BUCKET")
+        )
         self.textract = None
         self.s3 = None
         self._initialize_clients()
@@ -59,7 +74,10 @@ class TextractExtractor(BaseExtractor):
         try:
 
             def extraction_func():
-                return self._extract_with_textract(pdf_path, s3_bucket)
+                # If bucket not provided, fall back to default bucket discovered
+                # during initialisation.
+                bucket_to_use = s3_bucket or self.default_s3_bucket
+                return self._extract_with_textract(pdf_path, bucket_to_use)
 
             (transactions, raw_data, page_count), duration_ms = self._time_extraction(
                 extraction_func
@@ -67,13 +85,18 @@ class TextractExtractor(BaseExtractor):
 
             confidence = self._calculate_confidence(transactions, raw_data)
 
-            return self._create_result(
+            result = self._create_result(
                 transactions=transactions,
                 confidence_score=confidence,
                 processing_time_ms=duration_ms,
                 raw_data=raw_data,
                 page_count=page_count,
             )
+            
+            # Save individual outputs
+            self._save_individual_outputs(pdf_path, raw_data, transactions)
+            
+            return result
 
         except Exception as e:
             return self._create_result(
@@ -87,13 +110,22 @@ class TextractExtractor(BaseExtractor):
         self, pdf_path: Path, s3_bucket: str | None
     ) -> tuple[list[Transaction], dict[str, Any], int]:
         """Core extraction logic using Textract."""
-        # Upload to S3 if needed
+        # Decide strategy based on file type & bucket availability
+        is_pdf = pdf_path.suffix.lower() == ".pdf"
+
+        if is_pdf and not s3_bucket:
+            # For PDFs Textract requires S3 in many regions. If no bucket, error.
+            raise ExtractionError(
+                "PDF analysis with Textract requires an S3 bucket. Provide one "
+                "via the 's3_bucket' argument or TEXTRACT_S3_BUCKET env var."
+            )
+
+        # Prepare document location
         if s3_bucket:
-            s3_key = f"textract-input/{pdf_path.name}"
+            s3_key = f"textract-input/{pdf_path.stem}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
             self._upload_to_s3(pdf_path, s3_bucket, s3_key)
             document_location = {"S3Object": {"Bucket": s3_bucket, "Name": s3_key}}
         else:
-            # Use document bytes for smaller files
             with open(pdf_path, "rb") as f:
                 document_bytes = f.read()
             document_location = {"Bytes": document_bytes}
@@ -102,29 +134,23 @@ class TextractExtractor(BaseExtractor):
         try:
             if s3_bucket:
                 response = self.textract.start_document_analysis(
-                    DocumentLocation=document_location, FeatureTypes=["TABLES", "FORMS"]
+                    DocumentLocation=document_location,
+                    FeatureTypes=["TABLES", "FORMS"],
                 )
                 job_id = response["JobId"]
-
-                # Poll for completion
                 result = self._wait_for_job_completion(job_id)
             else:
-                # Synchronous call for smaller documents
                 result = self.textract.analyze_document(
-                    Document=document_location, FeatureTypes=["TABLES", "FORMS"]
+                    Document=document_location,
+                    FeatureTypes=["TABLES", "FORMS"],
                 )
 
         except ClientError as e:
-            error_code = e.response["Error"]["Code"]
-            if error_code == "InvalidParameterException":
-                # Try with bytes if S3 fails
-                with open(pdf_path, "rb") as f:
-                    document_bytes = f.read()
-                result = self.textract.analyze_document(
-                    Document={"Bytes": document_bytes}, FeatureTypes=["TABLES", "FORMS"]
-                )
-            else:
-                raise
+            error_code = e.response["Error"].get("Code", "")
+            if error_code in {"InvalidParameterException", "UnsupportedDocumentException"} and s3_bucket:
+                # Retry path: maybe initial strategy wrong; try alternate.
+                return self._extract_with_textract(pdf_path, s3_bucket)
+            raise
 
         # Process results
         transactions = self._process_textract_result(result)
@@ -302,7 +328,7 @@ class TextractExtractor(BaseExtractor):
                 date=parsed_date,
                 description=description,
                 amount_brl=amount,
-                category=classify_transaction(description),
+                category=classify_transaction(description, amount)["category"],
                 transaction_type=transaction_type,
                 currency_orig="BRL",
                 confidence_score=min(confidence, 1.0),
@@ -373,7 +399,7 @@ class TextractExtractor(BaseExtractor):
                 date=parsed_date,
                 description=description,
                 amount_brl=amount,
-                category=classify_transaction(description),
+                category=classify_transaction(description, amount)["category"],
                 transaction_type=TransactionType.DOMESTIC,
                 currency_orig="BRL",
                 confidence_score=0.6,  # Lower confidence for text parsing
@@ -427,3 +453,78 @@ class TextractExtractor(BaseExtractor):
 
         # Combine scores
         return 0.6 * avg_confidence + 0.2 * table_quality + 0.2 * block_quality
+
+    def _save_individual_outputs(self, pdf_path: Path, raw_data: dict, transactions: list) -> None:
+        """Save individual extractor outputs to 4outputs folder."""
+        try:
+
+            pdf_name = pdf_path.stem
+            
+            # Base output directory
+            output_base = Path("/Users/lech/Install/NewEvolveo3pro/4outputs/textract")
+            
+            # Save raw text
+            text_dir = output_base / "text"
+            text_dir.mkdir(parents=True, exist_ok=True)
+            text_file = text_dir / f"{pdf_name}.txt"
+            
+            # Generate raw text from transactions
+            raw_text = ""
+            if transactions:
+                raw_text = "\n".join([t.raw_text for t in transactions if t.raw_text])
+            
+            with open(text_file, 'w', encoding='utf-8') as f:
+                f.write(f"Textract Extractor Output\n")
+                f.write(f"PDF: {pdf_path.name}\n")
+
+                f.write(f"Transactions found: {len(transactions)}\n")
+                f.write(f"Total blocks: {raw_data.get('total_blocks', 0)}\n")
+                f.write(f"Table count: {raw_data.get('table_count', 0)}\n")
+                f.write("=" * 50 + "\n\n")
+                f.write(raw_text)
+            
+            # Save CSV (always, even if zero transactions)
+            csv_dir = output_base / "csv"
+            csv_dir.mkdir(parents=True, exist_ok=True)
+            csv_file = csv_dir / f"{pdf_name}.csv"
+            self._save_transactions_to_csv(transactions, csv_file)
+        
+        except Exception as e:
+            print(f"Failed to save textract outputs: {e}")
+
+    def _save_transactions_to_csv(self, transactions: list, output_file: Path) -> None:
+        """Save transactions to CSV file using golden CSV format."""
+        try:
+            import pandas as pd
+
+            if not transactions:
+                return
+
+            data = []
+            for t in transactions:
+                data.append(
+                    {
+                        "card_last4": "",  # Not available in Phase 1
+                        "post_date": t.date.strftime("%Y-%m-%d"),
+                        "desc_raw": t.description,
+                        "amount_brl": f"{t.amount_brl:.2f}",
+                        "installment_seq": "0",
+                        "installment_tot": "0", 
+                        "fx_rate": "0.00",
+                        "iof_brl": "0.00",
+                        "category": t.category or "",
+                        "merchant_city": "",  # Not available in Phase 1
+                        "ledger_hash": "",  # Not available in Phase 1
+                        "prev_bill_amount": "0",
+                        "interest_amount": "0",
+                        "amount_orig": "0.00",
+                        "currency_orig": "",
+                        "amount_usd": "0.00"
+                    }
+                )
+
+            df = pd.DataFrame(data)
+            df.to_csv(output_file, index=False, sep=";")
+        
+        except Exception as e:
+            print(f"Failed to save CSV: {e}")

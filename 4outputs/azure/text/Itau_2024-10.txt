@@ -1,0 +1,78 @@
+Azure Document Intelligence Extractor Output
+PDF: Itau_2024-10.pdf
+Transactions found: 50
+Model ID: prebuilt-layout
+Table count: 8
+==================================================
+
+Total da fatura anterior | 71.543,24
+Pagamento efetuado em 23/09/2024 | - 71.543,24
+S Saldo financiado
+:selected: | 0,00
++
+E Encargos (financiamento + moratorio)
+:selected: | 3.822,12
++
+:selected: Lançamentos atuais | 4.772,90
+℮ Total desta fatura :selected: | 8.595,02
+Valor total financiado | R$ 4.338,11 | 100,00%
+Encargos | R$ 447,69 | -
+IOF | R$ 53,80 | -
+Total a pagar | R$ 9.096,51 | -
+Juros: 10,32 % am - 230,34 % aa | CET: 10,95 % am - 253,88 % aa
+Valor total financiado | R$ 8.742,59 | 100,00%
+Valor solicitado | R$ 8.595,02 | 98,31 %
+IOF | R$ 147,57 | 1,69 %
+Total a pagar | R$ 11.276,87 -
+Juros: 5,45 % am - 90,72 % aa | CET: 6,32 % am - 110,77 % aa
+10/10/2024 | 00406694061/0143423 | FT | N | 03/10/2024 | 175/06694061-0
+ | 5/0 R$ |  |  |  | R$ 8.595,02
+LEONARDO B LECH (final 6853)
+:28/05 | FARMACIA SAO JOAO 05/06 SAÚDE .CAXIAS DO SUL | 39,40
+,10/06
+:selected: | FARMACIA SAO JOAO 04/06 | 87,64
+06/07 | FARMACIA SAO JOAO 03/06 | 81,09
+25/09 | APPLE.COM/BILL | 49,90
+-27/09 | FARMACIA SAO JOAO 01/04 | 20,78
+28/09 | RESTAURANTE FRANZ | 104,85
+-28/09
+:selected: | PostoDe | 305,04
+28/09
+:selected: | FARMACIA SAO JOAO 01/04 | 21,73
+928/09 :unselected: | REFUGIO SKATE PARK LTD ALIMENTAÇÃO .PASSO FUNDO | 170,50
+30/09 | PANVEL FARMACIAS 01/03 | 42,70
+001/10 | PANVEL FARMACIAS 01/03 | 127,05
+Lançamentos no cartão (final 6853) |  | 1.050,68
+LEONARDO B LECH (final 9779) |  | 
+:selected: @16/06 | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 18,28
+@16/06
+:selected: | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 11,08
+@16/06
+:selected: | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 40,44
+@16/06
+:selected: | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 12,74
+@16/06
+:selected: | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 20,50
+@16/06
+:selected: | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 21,61
+@16/06
+:selected: | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 60,94
+@16/06 | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 13,30
+@16/06
+:selected: | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 14,96
+@16/06 | RECARGAPAY *LEONA04/12 DIVERSOS .SAO PAULO | 11,63
+Lançamentos | no cartão (final 9779) | 225,48
+@17/06
+:selected: | PICPAY LBL INTEGRA04/12 DIVERSOS .S o Paulo | 11,59
+@17/06
+:unselected: | PICPAY LBL INTEGRA04/12 DIVERSOS .S o Paulo | 46,13
+@17/06
+:unselected: | PICPAY LBL INTEGRA04/05 DIVERSOS .S o Paulo | 107,60
+@17/06
+:unselected: | PICPAY LBL INTEGRA04/06 DIVERSOS .S o Paulo | 20,39
+@18/06
+:unselected: | PICPAY LBL INTEGRA04/06 DIVERSOS .S o Paulo | 30,53
+@18/06
+:unselected: | PICPAY LBL INTEGRA04/06 DIVERSOS .S o Paulo | 57,01
+ |  |  | se não
+de posse do protocolo, contate a Ouvidoria. Dias úteis, das 9h às 18h Deficiente auditivo/fala 0800 722 1722 Todos os dias, 24h

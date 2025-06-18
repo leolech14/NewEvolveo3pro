@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
+import pandas as pd
 
 try:
     import camelot
@@ -44,13 +45,18 @@ class CamelotExtractor(BaseExtractor):
 
             confidence = self._calculate_confidence(transactions, raw_data)
 
-            return self._create_result(
+            result = self._create_result(
                 transactions=transactions,
                 confidence_score=confidence,
                 processing_time_ms=duration_ms,
                 raw_data=raw_data,
                 page_count=page_count,
             )
+            
+            # Save individual outputs
+            self._save_individual_outputs(pdf_path, raw_data, transactions)
+            
+            return result
 
         except Exception as e:
             return self._create_result(
@@ -69,17 +75,28 @@ class CamelotExtractor(BaseExtractor):
         # Try lattice method first (for tables with borders)
         try:
             lattice_tables = camelot.read_pdf(
-                str(pdf_path), flavor="lattice", pages="all"
+                str(pdf_path), 
+                flavor="lattice", 
+                pages="all",
+                line_scale=40,  # More sensitive line detection
+                copy_text=["v", "h"],  # Copy text from vertical and horizontal
+                shift_text=["l", "t", "r"]  # Shift text alignment
             )
             lattice_transactions = self._process_tables(lattice_tables, "lattice")
             transactions.extend(lattice_transactions)
         except Exception as e:
             print(f"Lattice extraction failed: {e}")
 
-        # Try stream method (for tables without borders)
+        # Try stream method with enhanced parameters (for tables without borders)
         try:
             stream_tables = camelot.read_pdf(
-                str(pdf_path), flavor="stream", pages="all"
+                str(pdf_path), 
+                flavor="stream", 
+                pages="all",
+                table_areas=None,  # Auto-detect table areas
+                columns=None,  # Auto-detect columns
+                row_tol=2,  # Row tolerance for grouping
+                column_tol=0  # Column tolerance
             )
             stream_transactions = self._process_tables(stream_tables, "stream")
 
@@ -90,6 +107,22 @@ class CamelotExtractor(BaseExtractor):
 
         except Exception as e:
             print(f"Stream extraction failed: {e}")
+
+        # Try aggressive stream mode if nothing found
+        if not transactions:
+            try:
+                aggressive_tables = camelot.read_pdf(
+                    str(pdf_path),
+                    flavor="stream",
+                    pages="all",
+                    edge_tol=500,  # Very large edge tolerance
+                    row_tol=10,  # Larger row tolerance
+                    column_tol=5  # Some column tolerance
+                )
+                aggressive_transactions = self._process_tables(aggressive_tables, "aggressive")
+                transactions.extend(aggressive_transactions)
+            except Exception as e:
+                print(f"Aggressive extraction failed: {e}")
 
         # Get page count
         try:
@@ -107,6 +140,7 @@ class CamelotExtractor(BaseExtractor):
                 len(lattice_tables) if "lattice_tables" in locals() else 0
             ),
             "stream_tables": len(stream_tables) if "stream_tables" in locals() else 0,
+            "aggressive_tables": len(aggressive_tables) if "aggressive_tables" in locals() else 0,
             "total_transactions": len(transactions),
             "page_count": page_count,
         }
@@ -247,6 +281,8 @@ class CamelotExtractor(BaseExtractor):
             )
 
             confidence = calculate_confidence(
+                description=description,
+                amount=amount,
                 has_date=date_col is not None,
                 has_amount=True,
                 description_length=len(description),
@@ -257,7 +293,7 @@ class CamelotExtractor(BaseExtractor):
                 date=parsed_date,
                 description=description,
                 amount_brl=amount,
-                category=classify_transaction(description),
+                category=classify_transaction(description, amount)["category"],
                 transaction_type=transaction_type,
                 currency_orig="BRL",
                 confidence_score=confidence
@@ -319,3 +355,82 @@ class CamelotExtractor(BaseExtractor):
 
         # Combine scores
         return 0.8 * avg_confidence + 0.2 * table_quality
+
+    def _save_individual_outputs(self, pdf_path: Path, raw_data: dict, transactions: list) -> None:
+        """Save individual extractor outputs to 4outputs folder."""
+        try:
+
+            pdf_name = pdf_path.stem
+            
+            # Base output directory
+            output_base = Path("/Users/lech/Install/NewEvolveo3pro/4outputs/camelot")
+            
+            # Remove previous files for this PDF first
+            for old in (output_base / "text").glob(f"{pdf_name}_*.txt"):
+                old.unlink()
+            for old in (output_base / "csv").glob(f"{pdf_name}_*.csv"):
+                old.unlink()
+
+            # Save raw text
+            text_dir = output_base / "text"
+            text_dir.mkdir(parents=True, exist_ok=True)
+            text_file = text_dir / f"{pdf_name}.txt"
+            
+            raw_text = raw_data.get("raw_text", "")
+            if not raw_text and transactions:
+                # Generate raw text from transactions if not available
+                raw_text = "\n".join([t.raw_text for t in transactions if t.raw_text])
+            
+            with open(text_file, 'w', encoding='utf-8') as f:
+                f.write(f"Camelot Extractor Output\n")
+                f.write(f"PDF: {pdf_path.name}\n")
+
+                f.write(f"Transactions found: {len(transactions)}\n")
+                f.write("=" * 50 + "\n\n")
+                f.write(raw_text)
+            
+            # Save CSV (always, even if zero transactions)
+            csv_dir = output_base / "csv"
+            csv_dir.mkdir(parents=True, exist_ok=True)
+            csv_file = csv_dir / f"{pdf_name}.csv"
+            self._save_transactions_to_csv(transactions, csv_file)
+        
+        except Exception as e:
+            print(f"Failed to save camelot outputs: {e}")
+
+    def _save_transactions_to_csv(self, transactions: list, output_file: Path) -> None:
+        """Save transactions to CSV file using golden CSV format."""
+        try:
+            import pandas as pd
+
+            if not transactions:
+                return
+
+            data = []
+            for t in transactions:
+                data.append(
+                    {
+                        "card_last4": "",  # Not available in Phase 1
+                        "post_date": t.date.strftime("%Y-%m-%d"),
+                        "desc_raw": t.description,
+                        "amount_brl": f"{t.amount_brl:.2f}",
+                        "installment_seq": "0",
+                        "installment_tot": "0", 
+                        "fx_rate": "0.00",
+                        "iof_brl": "0.00",
+                        "category": t.category or "",
+                        "merchant_city": "",  # Not available in Phase 1
+                        "ledger_hash": "",  # Not available in Phase 1
+                        "prev_bill_amount": "0",
+                        "interest_amount": "0",
+                        "amount_orig": "0.00",
+                        "currency_orig": "",
+                        "amount_usd": "0.00"
+                    }
+                )
+
+            df = pd.DataFrame(data)
+            df.to_csv(output_file, index=False, sep=";")
+        
+        except Exception as e:
+            print(f"Failed to save CSV: {e}")

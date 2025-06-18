@@ -8,16 +8,16 @@ Copy from `.env.example` and add your actual credentials:
 
 ```bash
 # AWS Textract
-AWS_ACCESS_KEY_ID=your_aws_access_key_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
+AWS_ACCESS_KEY_ID=[your-redacted-aws-key]
+AWS_SECRET_ACCESS_KEY=p5hRQPwfItzHd/gjysmtSb99HPc4zSXOODx8KuOo
 AWS_REGION=us-east-1
 
 # Azure Document Intelligence
-AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://your-region.cognitiveservices.azure.com/
-AZURE_DOCUMENT_INTELLIGENCE_KEY=your_azure_key_here
+AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=https://azurelbl.cognitiveservices.azure.com/
+AZURE_DOCUMENT_INTELLIGENCE_KEY=E36dAzBzvECIs3a01Fchw4tM0Jv8ctMaH615srjARl1ZqDgjL7UUJQQJ99BFACYeBjFXJ3w3AAALACOGW6Yb
 
 # GitHub (for auto-golden bot)
-GITHUB_TOKEN=your_github_personal_access_token_here
+GITHUB_TOKEN=[your-redacted-github-token]
 ```
 
 ## 2. Connect to GitHub Repository

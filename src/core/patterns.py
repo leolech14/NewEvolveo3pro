@@ -24,6 +24,14 @@ RE_PAYMENT: Final[re.Pattern[str]] = re.compile(
     re.IGNORECASE
 )
 
+# Additional payment/credit patterns  
+RE_CREDIT_PATTERNS: Final[re.Pattern[str]] = re.compile(
+    r"(PAGAMENTO\s+EFETUADO|ESTORNO|CASHBACK|DEVOLUÇÃO|REEMBOLSO|" +
+    r"CREDITO|CREDENCIAMENTO|VOUCHER|BONUS|DESCONTO|CANCELAMENTO|" +
+    r"REVERSAO|ANULACAO)",
+    re.IGNORECASE
+)
+
 RE_INSTALLMENT: Final[re.Pattern[str]] = re.compile(r"(\d{1,2})/(\d{1,2})")
 RE_CARD_FINAL: Final[re.Pattern[str]] = re.compile(r"final (\d{4})")
 
@@ -31,6 +39,10 @@ RE_CARD_FINAL: Final[re.Pattern[str]] = re.compile(r"final (\d{4})")
 RE_DOLAR: Final[re.Pattern[str]] = re.compile(r"^D[óo]lar de Convers[ãa]o.*?(\d+,\d{4})")
 RE_IOF_LINE: Final[re.Pattern[str]] = re.compile(r"Repasse de IOF", re.IGNORECASE)
 RE_BRL: Final[re.Pattern[str]] = re.compile(r"-?\s*\d{1,3}(?:\.\d{3})*,\d{2}")
+
+RE_FX_L2: Final[re.Pattern[str]] = re.compile(
+    r"^(?P<city>.+?)\s+(?P<orig>[\d.,]+)\s+(?P<cur>[A-Z]{3})\s+(?P<usd>[\d.,]+)$"
+)
 
 # Category classification patterns (20+ categories)
 CATEGORY_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
@@ -58,6 +70,19 @@ CATEGORY_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
 
 # Text cleaning patterns
 LEAD_SYM: Final[str] = ">@§$Z)_•*®«» "
+
+# Itau parsing rules for statement processing
+ITAU_PARSING_RULES: Final[dict] = {
+    "skip_headers": True,
+    "normalize_amounts": True,
+    "extract_installments": True,
+    "classify_categories": True,
+    "validate_dates": True,
+    "skip_keywords": [
+        "LANÇAMENTOS", "PAGAMENTOS", "TOTAL", "LIMITE", "FATURA", 
+        "VENCIMENTO", "PRÓXIMA", "SALDO", "ENCARGOS", "PARCELAMENTO"
+    ]
+}
 RE_DROP_HDR: Final[re.Pattern[str]] = re.compile(
     r"^(Total |Lançamentos|Limites|Encargos|Próxima fatura|Demais faturas|"
     r"Parcelamento da fatura|Simulação|Pontos|Cashback|Outros lançamentos|"
@@ -161,8 +186,24 @@ def generate_ledger_hash(date_str: str, description: str, amount: Decimal) -> st
 
 
 def is_payment_transaction(description: str) -> bool:
-    """Check if transaction is a payment."""
-    return bool(RE_PAYMENT.search(description))
+    """Check if transaction is a payment/credit/refund."""
+    return bool(RE_PAYMENT.search(description) or RE_CREDIT_PATTERNS.search(description))
+
+
+def validate_amount_parsing(amount_str: str, description: str) -> Decimal:
+    """Parse amount with validation, fail on None when BRL value exists."""
+    try:
+        # Basic parsing logic - simplified for example
+        cleaned = amount_str.replace(",", ".").replace(" ", "")
+        if cleaned:
+            return Decimal(cleaned)
+        else:
+            raise ValueError(f"Failed to parse amount from: {description}")
+    except (ValueError, InvalidOperation) as e:
+        # Fail hard if we can't parse but amount clearly exists
+        if any(char.isdigit() for char in amount_str):
+            raise ValueError(f"Critical: Failed to parse amount '{amount_str}' in '{description}'") from e
+        return Decimal("0.00")
 
 
 def is_fx_transaction(description: str) -> bool:
@@ -182,7 +223,7 @@ def detect_transaction_type(description: str, amount: Decimal) -> str:
         return "CREDITO"
 
 
-def calculate_confidence(description: str, amount: Decimal, parsed_fields: int = 0) -> float:
+def calculate_confidence(description: str, amount: Decimal, parsed_fields: int = 0, **kwargs) -> float:
     """Calculate confidence score for extracted transaction."""
     confidence = 0.5  # Base confidence
     
@@ -196,6 +237,16 @@ def calculate_confidence(description: str, amount: Decimal, parsed_fields: int =
     
     # Boost for parsed fields
     confidence += min(parsed_fields * 0.02, 0.1)
+    
+    # Additional boosts from kwargs
+    if kwargs.get('has_date', False):
+        confidence += 0.05
+    if kwargs.get('has_card', False):
+        confidence += 0.05
+    if kwargs.get('has_installment', False):
+        confidence += 0.05
+    if kwargs.get('has_merchant', False):
+        confidence += 0.05
     
     return min(confidence, 1.0)
 
@@ -242,3 +293,29 @@ def normalize_date(date_str: str, ref_year: int = 2024, ref_month: int = 10) -> 
         return date_str
     
     return f"{year:04d}-{month:02d}-{day:02d}"
+
+
+def validate_date(date_str: str) -> bool:
+    """Validate if date string is in correct format."""
+    if not date_str:
+        return False
+    
+    try:
+        # Try to parse as YYYY-MM-DD
+        from datetime import datetime
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
+
+def parse_fx_currency_line(line: str) -> Optional[tuple[str, str, Decimal]]:
+    """Parse FX currency line to extract city, currency, and amount."""
+    # Pattern for: CITY AMOUNT CURRENCY USD_AMOUNT
+    match = RE_FX_L2.search(line)
+    if match:
+        city = match.group("city").strip()
+        amount = normalize_amount(match.group("orig"))
+        currency = match.group("cur")
+        return (city, currency, amount)
+    return None

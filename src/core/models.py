@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 from enum import Enum
@@ -168,6 +168,7 @@ class EnsembleResult:
     pipeline_results: list[PipelineResult]
     merge_strategy: str
     conflicts_resolved: int
+    validation_metrics: dict[str, bool] = field(default_factory=dict)
 
     @property
     def total_amount_brl(self) -> Decimal:

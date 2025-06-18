@@ -1,0 +1,6 @@
+PDFPlumber Extractor Output
+PDF: Itau_2025-05.pdf
+Transactions found: 0
+Page count: 8
+==================================================
+

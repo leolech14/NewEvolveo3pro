@@ -1,4 +1,5 @@
 """Smart ensemble merging of multiple extraction pipelines."""
+# noqa: E501
 
 from __future__ import annotations
 
@@ -142,20 +143,13 @@ class EnsembleMerger:
 
     def _auto_select_extractors(self, pdf_path: Path) -> list[ExtractorType]:
         """Auto-select extractors based on PDF characteristics."""
-        extractors = [ExtractorType.PDFPLUMBER]  # Always try pdfplumber first
-
-        # Check if PDF likely needs OCR
-        pdfplumber_extractor = self.extractors[ExtractorType.PDFPLUMBER]
-        if pdfplumber_extractor.is_scanned_pdf(pdf_path):
-            # Add cloud OCR options
-            extractors.extend(
-                [ExtractorType.TEXTRACT, ExtractorType.AZURE_DOC_INTELLIGENCE]
-            )
-        else:
-            # For born-digital PDFs, add table extractors
-            extractors.append(ExtractorType.CAMELOT)
-            # Still add one OCR option as fallback
-            extractors.append(ExtractorType.TEXTRACT)
+        # Always try all available extractors for maximum coverage
+        extractors = [
+            ExtractorType.PDFPLUMBER,
+            ExtractorType.CAMELOT,
+            ExtractorType.AZURE_DOC_INTELLIGENCE,
+            # Skip TEXTRACT due to AWS credentials requirement
+        ]
 
         return extractors
 
@@ -206,7 +200,7 @@ class EnsembleMerger:
                     # Wait for cancellations
                     try:
                         await asyncio.gather(*pending, return_exceptions=True)
-                    except:
+                    except Exception:  # noqa: broad-except
                         pass
 
                     print(
@@ -427,7 +421,7 @@ class EnsembleMerger:
             transaction_type=base_transaction.transaction_type,
             currency_orig=base_transaction.currency_orig,
             amount_orig=base_transaction.amount_orig,
-            exchange_rate=base_transaction.exchange_rate,
+            fx_rate=base_transaction.fx_rate,
             confidence_score=base_transaction.confidence_score,
             source_extractor=None,  # Ensemble result
             raw_text=f"Ensemble: {base_transaction.raw_text}",
@@ -486,3 +480,70 @@ class EnsembleMerger:
                 health_status[extractor_type] = False
 
         return health_status
+
+    async def run_all_extractors(
+        self,
+        pdf_path: Path,
+        enabled_extractors: list[ExtractorType] | None = None,
+    ) -> list[PipelineResult]:
+        """Run each enabled extractor exactly once and return their results.
+
+        This helper executes every extractor (or the subset provided via
+        ``enabled_extractors``) without applying race-mode early termination or
+        ensemble merging.
+
+        Each extractor's ``extract`` implementation already writes its own
+        text/CSV artefacts via ``_save_individual_outputs``.
+        Therefore, running this helper guarantees **one** text and **one** CSV
+        file per extractor for the given PDF (assuming the extractor completes
+        successfully).
+
+        Args:
+            pdf_path: The PDF to process.
+            enabled_extractors: Optional list of extractor types to run. If
+                ``None`` (default) we run *all* extractors that were
+                successfully initialised in ``self.extractors``.
+
+        Returns:
+            A list of ``PipelineResult`` objects in the same order that the
+            extractors were executed.
+        """
+        # Default to all available extractors
+        if enabled_extractors is None:
+            enabled_extractors = list(self.extractors.keys())
+
+        # Filter to those actually initialised
+        extractor_queue: list[ExtractorType] = [
+            ext for ext in enabled_extractors if ext in self.extractors
+        ]
+
+        if not extractor_queue:
+            return []
+
+        # Launch every extractor in parallel and await completion
+        tasks = [
+            asyncio.create_task(self._run_single_extractor(ext, pdf_path))
+            for ext in extractor_queue
+        ]
+
+        raw_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Convert exceptions to error PipelineResult objects for consistency
+        results: list[PipelineResult] = []
+        for ext, res in zip(extractor_queue, raw_results, strict=True):
+            if isinstance(res, PipelineResult):
+                results.append(res)
+            else:
+                # Wrap exception into a failure PipelineResult so the caller
+                # receives a consistent list length.
+                results.append(
+                    PipelineResult(
+                        transactions=[],
+                        confidence_score=0.0,
+                        pipeline_name=ext,
+                        processing_time_ms=0.0,
+                        error_message=str(res),
+                    )
+                )
+
+        return results

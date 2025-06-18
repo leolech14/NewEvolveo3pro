@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date
+import os
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,11 @@ try:
     from azure.core.exceptions import HttpResponseError
 except ImportError:
     DocumentAnalysisClient = None
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
 
 from ..core.models import ExtractorType, PipelineResult, Transaction, TransactionType
 from ..core.patterns import (
@@ -34,8 +40,13 @@ class AzureDocIntelligenceExtractor(BaseExtractor):
                 "azure-ai-formrecognizer is required for Azure extraction"
             )
 
-        self.endpoint = endpoint
-        self.api_key = api_key
+        # Load environment variables
+        if load_dotenv:
+            load_dotenv()
+        
+        # Use provided values or get from environment
+        self.endpoint = endpoint or os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
+        self.api_key = api_key or os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
         self.client = None
         self._initialize_client()
 
@@ -78,13 +89,18 @@ class AzureDocIntelligenceExtractor(BaseExtractor):
 
             confidence = self._calculate_confidence(transactions, raw_data)
 
-            return self._create_result(
+            result = self._create_result(
                 transactions=transactions,
                 confidence_score=confidence,
                 processing_time_ms=duration_ms,
                 raw_data=raw_data,
                 page_count=page_count,
             )
+            
+            # Save individual outputs
+            self._save_individual_outputs(pdf_path, raw_data, transactions)
+            
+            return result
 
         except Exception as e:
             return self._create_result(
@@ -248,7 +264,7 @@ class AzureDocIntelligenceExtractor(BaseExtractor):
                 date=parsed_date,
                 description=description,
                 amount_brl=amount,
-                category=classify_transaction(description),
+                category=classify_transaction(description, amount)["category"],
                 transaction_type=transaction_type,
                 currency_orig="BRL",
                 confidence_score=min(base_confidence, 1.0),
@@ -317,7 +333,7 @@ class AzureDocIntelligenceExtractor(BaseExtractor):
                 date=parsed_date,
                 description=description,
                 amount_brl=amount,
-                category=classify_transaction(description),
+                category=classify_transaction(description, amount)["category"],
                 transaction_type=TransactionType.DOMESTIC,
                 currency_orig="BRL",
                 confidence_score=min(confidence * 0.9, 1.0),
@@ -392,3 +408,77 @@ class AzureDocIntelligenceExtractor(BaseExtractor):
 
         # Combine scores
         return 0.8 * avg_confidence + 0.2 * table_quality
+
+    def _save_individual_outputs(self, pdf_path: Path, raw_data: dict, transactions: list) -> None:
+        """Save individual extractor outputs to 4outputs folder."""
+        try:
+            pdf_name = pdf_path.stem
+            
+            # Base output directory
+            output_base = Path("/Users/lech/Install/NewEvolveo3pro/4outputs/azure")
+            
+            # Save raw text
+            text_dir = output_base / "text"
+            text_dir.mkdir(parents=True, exist_ok=True)
+            text_file = text_dir / f"{pdf_name}.txt"
+            
+            # Generate raw text from transactions
+            raw_text = ""
+            if transactions:
+                raw_text = "\n".join([t.raw_text for t in transactions if t.raw_text])
+            
+            with open(text_file, 'w', encoding='utf-8') as f:
+                f.write(f"Azure Document Intelligence Extractor Output\n")
+                f.write(f"PDF: {pdf_path.name}\n")
+                f.write(f"Transactions found: {len(transactions)}\n")
+                f.write(f"Model ID: {raw_data.get('model_id', 'N/A')}\n")
+                f.write(f"Table count: {raw_data.get('table_count', 0)}\n")
+                f.write("=" * 50 + "\n\n")
+                f.write(raw_text)
+            
+            # Save CSV
+            if transactions:
+                csv_dir = output_base / "csv"
+                csv_dir.mkdir(parents=True, exist_ok=True)
+                csv_file = csv_dir / f"{pdf_name}.csv"
+                self._save_transactions_to_csv(transactions, csv_file)
+        
+        except Exception as e:
+            print(f"Failed to save azure outputs: {e}")
+
+    def _save_transactions_to_csv(self, transactions: list, output_file: Path) -> None:
+        """Save transactions to CSV file using golden CSV format."""
+        try:
+            import pandas as pd
+
+            if not transactions:
+                return
+
+            data = []
+            for t in transactions:
+                data.append(
+                    {
+                        "card_last4": "",  # Not available in Phase 1
+                        "post_date": t.date.strftime("%Y-%m-%d"),
+                        "desc_raw": t.description,
+                        "amount_brl": f"{t.amount_brl:.2f}",
+                        "installment_seq": "0",
+                        "installment_tot": "0", 
+                        "fx_rate": "0.00",
+                        "iof_brl": "0.00",
+                        "category": t.category or "",
+                        "merchant_city": "",  # Not available in Phase 1
+                        "ledger_hash": "",  # Not available in Phase 1
+                        "prev_bill_amount": "0",
+                        "interest_amount": "0",
+                        "amount_orig": "0.00",
+                        "currency_orig": "",
+                        "amount_usd": "0.00"
+                    }
+                )
+
+            df = pd.DataFrame(data)
+            df.to_csv(output_file, index=False, sep=";")
+        
+        except Exception as e:
+            print(f"Failed to save CSV: {e}")

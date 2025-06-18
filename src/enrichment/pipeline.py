@@ -9,6 +9,7 @@ from src.core.models import EnsembleResult, Transaction
 from src.enrichment.fx_parser import AdvancedFXParser
 from src.enrichment.iof_calculator import IOFCalculator
 from src.enrichment.metadata_enricher import MetadataEnricher
+from src.enrichment.ml_enricher import MLEnricher
 from src.enrichment.pdf_validator import PDFValidator
 from src.enrichment.template_matcher import ItauTemplateMatcher
 
@@ -22,6 +23,7 @@ class EnrichmentPipeline:
         self.fx_parser = AdvancedFXParser()
         self.iof_calculator = IOFCalculator()
         self.metadata_enricher = MetadataEnricher()
+        self.ml_enricher = MLEnricher()
         self.pdf_validator = PDFValidator()
         self.template_matcher = ItauTemplateMatcher()
 
@@ -49,10 +51,13 @@ class EnrichmentPipeline:
         # Step 3: IOF calculation for all transactions
         await self._apply_iof_calculation(result.final_transactions)
 
-        # Step 4: Metadata enrichment for missing fields
+        # Step 4: ML-based enrichment using trained models
+        await self._apply_ml_enrichment(result.final_transactions)
+
+        # Step 5: Metadata enrichment for missing fields
         await self._apply_metadata_enrichment(result.final_transactions)
 
-        # Step 5: PDF validation against statement totals
+        # Step 6: PDF validation against statement totals
         if pdf_text:
             validation_results = self.pdf_validator.validate_totals(result, pdf_text)
             result.validation_metrics.update(validation_results)
@@ -103,6 +108,17 @@ class EnrichmentPipeline:
         
         for transaction in transactions:
             self.iof_calculator.enrich_transaction(transaction)
+
+    async def _apply_ml_enrichment(self, transactions: list[Transaction]):
+        """Apply ML-based enrichment using trained models."""
+        logger.info("Applying ML-based enrichment")
+        
+        # Get model status
+        model_status = self.ml_enricher.get_model_status()
+        logger.info(f"ML models loaded: {model_status['models_loaded']}/3")
+        
+        # Apply ML enrichment
+        self.ml_enricher.enrich_transactions(transactions)
 
     async def _apply_metadata_enrichment(self, transactions: list[Transaction]):
         """Apply metadata enrichment to fill missing fields."""
@@ -170,6 +186,6 @@ class EnrichmentPipeline:
         
         # Boost confidence based on enrichment
         confidence_boost = completeness * 0.2  # Up to 20% boost
-        result.confidence = min(1.0, result.confidence + confidence_boost)
+        result.confidence_score = min(1.0, result.confidence_score + confidence_boost)
         
         logger.info(f"Enrichment completeness: {completeness:.2%}, confidence boost: {confidence_boost:.2%}")
