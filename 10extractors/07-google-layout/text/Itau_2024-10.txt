@@ -1,0 +1,22 @@
+Google Document AI Layout_Parser Output
+PDF: Itau_2024-10.pdf
+Processor ID: 91d90f62e4cd4e91
+
+⚠️  BILLING DISABLED - MOCK DATA GENERATED ⚠️
+This output was generated using mock data because Google Cloud billing
+is disabled on project astute-buttress-340100.
+
+Processor Type: layout_parser
+Transactions found: 2
+Average Confidence: 89.0%
+Status: Billing disabled on project astute-buttress-340100
+
+To enable real processing:
+1. Visit: https://console.developers.google.com/billing/enable?project=astute-buttress-340100
+2. Enable billing on the project
+3. Re-run the extraction
+
+Mock Transactions Generated:
+==================================================
+ 1. 2024-10-05 | UBER DO BRASIL TECNO           | R$    25.30 | TRANSPORTE
+ 2. 2024-10-07 | FARMACIA SAO JOAO              | R$    87.64 | SAÚDE

@@ -1,0 +1,1 @@
+Extraction Report\n==================\n\nExtractor: PDFPlumber Text Extractor\nMethod: local\nSuccess: False\nProcessing Time: 2729ms\nConfidence: 0.00%\n\nTransactions Found: 0\n\n\nGenerated: 2025-06-18 11:55:22\n

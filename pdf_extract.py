@@ -20,10 +20,10 @@ def extract_with_newevolveo3pro(pdf_path: str):
     """Extract using the full NewEvolveo3pro pipeline (requires src imports)."""
     try:
         # Import the main extraction pipeline
-        from src.extractors.pdfplumber_extractor import PDFPlumberExtractor
+        from src.extractors.pdfplumber_extractor import PdfplumberExtractor
         from src.core.models import ExtractorType
         
-        extractor = PDFPlumberExtractor()
+        extractor = PdfplumberExtractor()
         result = extractor.extract(Path(pdf_path))
         
         print(f"✅ Extracted {len(result.transactions)} transactions")

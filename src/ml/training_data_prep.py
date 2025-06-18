@@ -97,6 +97,8 @@ class TrainingDataPreparator:
                 'target_installment_tot': transaction.installment_tot or 1,
                 'target_merchant_city': transaction.merchant_city or '',
                 'target_currency': transaction.currency_orig or 'BRL',
+                'target_fx_rate': transaction.fx_rate or 0.0,
+                'target_amount_orig': transaction.amount_orig or 0.0,
             }
             
             features.append(feature_dict)

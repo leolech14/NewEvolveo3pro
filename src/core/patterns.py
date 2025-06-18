@@ -108,10 +108,20 @@ def clean_line(raw: str) -> str:
 def normalize_amount(amount_str: str) -> Decimal:
     """Normalize Brazilian currency format to Decimal."""
     try:
-        # Remove spaces and non-digit characters except comma and minus
-        cleaned = re.sub(r"[^\d,\-]", "", amount_str.replace(" ", ""))
-        # Convert dots and commas to proper decimal format
-        cleaned = cleaned.replace(".", "").replace(",", ".")
+        # Remove spaces
+        cleaned = amount_str.replace(" ", "")
+        
+        # Handle Brazilian format: 1.234,56 -> 1234.56
+        if "," in cleaned and "." in cleaned:
+            # Has both comma and dot - Brazilian format with thousands separators
+            cleaned = cleaned.replace(".", "").replace(",", ".")
+        elif "," in cleaned:
+            # Only comma - treat as decimal separator
+            cleaned = cleaned.replace(",", ".")
+        # If only dots, leave as-is (already decimal format)
+        
+        # Remove any remaining non-digit characters except decimal point and minus
+        cleaned = re.sub(r"[^\d\.\-]", "", cleaned)
         return Decimal(cleaned)
     except (InvalidOperation, ValueError):
         return Decimal("0")

@@ -122,15 +122,18 @@ def train_fx_predictor(training_data: pd.DataFrame) -> FXRatePredictor:
         # Prepare data with proper column names for FX training
         fx_training_data = training_data.copy()
         
-        # Map to expected column names
-        fx_training_data['target_fx_rate'] = pd.to_numeric(fx_training_data.get('amount_magnitude', 0), errors='coerce') / 100  # Mock FX rate
-        fx_training_data['target_currency'] = fx_training_data.get('target_currency', 'BRL').fillna('BRL')
-        fx_training_data['amount_brl'] = pd.to_numeric(fx_training_data.get('amount_magnitude', 0), errors='coerce')
-        fx_training_data['amount_orig'] = pd.to_numeric(fx_training_data.get('amount_magnitude', 0), errors='coerce') / 5.2  # Mock original amount
+        # Map to expected column names using real data
+        fx_training_data['fx_rate'] = pd.to_numeric(fx_training_data.get('target_fx_rate', 0), errors='coerce') / 100  # Convert from hundredths
         fx_training_data['currency_orig'] = fx_training_data.get('target_currency', 'BRL').fillna('BRL')
+        fx_training_data['amount_brl'] = pd.to_numeric(fx_training_data.get('amount_magnitude', 0), errors='coerce') / 100  # Convert to decimal
+        fx_training_data['amount_orig'] = pd.to_numeric(fx_training_data.get('target_amount_orig', 0), errors='coerce') / 100  # Convert to decimal
         
-        # Only use non-BRL transactions for FX training
-        fx_training_data = fx_training_data[fx_training_data['target_currency'] != 'BRL']
+        # Only use valid FX rate data (rate > 0) for training
+        fx_training_data = fx_training_data[
+            (fx_training_data['fx_rate'] > 0) & 
+            (fx_training_data['currency_orig'] != 'BRL') &
+            (fx_training_data['amount_orig'] > 0)
+        ]
         
         results = predictor.train(fx_training_data)
         
@@ -193,7 +196,7 @@ def test_models(training_data: pd.DataFrame, classifier: CategoryClassifier,
         if fx_predictor:
             amount_brl = row.get('amount_magnitude', 0)
             amount_orig = row.get('target_amount_orig', 0)
-            currency = row.get('target_currency_orig', 'BRL')
+            currency = row.get('target_currency', 'BRL')
             
             if currency != 'BRL':
                 fx_rate, fx_confidence = fx_predictor.predict_single(

@@ -1,0 +1,1 @@
+Extraction Summary Report\nGenerated: 2025-06-18 12:00:59.163591\nPDF: data/incoming/Itau_2024-10.pdf\n\nResults:\n  camelot: 80 transactions\n  textract: 13 transactions\n  azure: 50 transactions\n  fallback: 58 transactions\n

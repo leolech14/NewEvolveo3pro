@@ -1,0 +1,19 @@
+PDFPlumber Extractor Output
+PDF: Itau_2024-10.pdf
+
+Transactions found: 94
+Confidence: 75.2%
+Processing time: 263ms
+
+First 10 transactions:
+==================================================
+ 1. 2025-06-18 | 101 - Planalto Total da fatura | R$ 71543.24 | OUTROS
+ 2. 2024-09-23 | Pagamento efetuado em /2024 -  | R$ 71543.24 | ENTRETENIMENTO
+ 3. 2025-06-18 | S Saldo financiado             | R$     0.00 | OUTROS
+ 4. 2025-06-18 | E Encargos (financiamento + mo | R$  3822.12 | BANCO
+ 5. 2025-06-18 | L Lançamentos atuais           | R$  4772.90 | OUTROS
+ 6. 2024-11-03 | 041024 Previsão prox. Fechamen | R$  8595.02 | OUTROS
+ 7. 2024-10-10 | R$  /2024 Flexível             | R$  8595.02 | OUTROS
+ 8. 2025-06-18 | R$ 4.256,91 R$                 | R$  1025.17 | OUTROS
+ 9. 2025-06-18 | + 10x R$                       | R$  1025.17 | OUTROS
+10. 2025-06-18 | IOF R$ 53,80 - IOF R$ 147,57   | R$     1.69 | OUTROS

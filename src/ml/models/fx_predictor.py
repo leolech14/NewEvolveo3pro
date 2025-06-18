@@ -112,10 +112,10 @@ class FXRatePredictor:
         X = self.prepare_features(valid_fx)
         y = pd.to_numeric(valid_fx['target_fx_rate'], errors='coerce')
         
-        # Remove invalid targets
-        valid_mask = (y > 0) & (y < 20)  # Reasonable FX rate range
+        # Remove invalid targets (rates are stored in hundredths, so 600 = 6.00)
+        valid_mask = (y > 0) & (y < 2000)  # Reasonable FX rate range (20.00 max)
         X = X[valid_mask]
-        y = y[valid_mask]
+        y = y[valid_mask] / 100  # Convert to proper decimal format
         
         if len(X) < 5:
             print("   ⚠️  Insufficient valid FX rate data after filtering")
@@ -128,7 +128,9 @@ class FXRatePredictor:
         for currency in ['USD', 'EUR', 'GBP']:
             currency_mask = valid_fx['target_currency'] == currency
             if currency_mask.sum() > 0:
-                avg_rate = y[currency_mask].mean()
+                # Use the converted y values (already in proper decimal format)
+                currency_y = y[currency_mask[valid_mask]]  # Apply both masks
+                avg_rate = currency_y.mean()
                 self.currency_averages[currency] = avg_rate
                 print(f"   • Average {currency} rate: {avg_rate:.3f}")
         

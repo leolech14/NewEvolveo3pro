@@ -151,18 +151,16 @@ class GoogleDocumentAIExtractor(BaseExtractor):
             # Calculate confidence score based on Google's confidence
             confidence_score = self._calculate_confidence(document)
             
-            return PipelineResult(
-                transactions=transactions,
-                confidence_score=confidence_score,
-                processing_time_ms=processing_time_ms,
-                extractor_type=self.extractor_type,
-                source_file=str(pdf_path),
-                page_count=len(document.pages),
-                raw_data={
-                    "google_entities": len(document.entities),
-                    "google_pages": len(document.pages),
-                    "google_confidence": confidence_score,
-                }
+            return self._create_result(
+            transactions=transactions,
+            confidence_score=confidence_score,
+            processing_time_ms=processing_time_ms,
+            page_count=len(document.pages),
+            raw_data={
+                "google_entities": len(document.entities),
+                "google_pages": len(document.pages),
+            "google_confidence": confidence_score,
+            }
             )
 
         except Exception as e:

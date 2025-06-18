@@ -1,0 +1,4 @@
+Extraction Summary - Azure_DocIntel\n==================================================\n\nSuccess: True\nTransactions: 50\nConfidence: 95.20%\nProcessing Time: 9600ms\nGenerated: 2025-06-18 12:00:58\n\nSample Transactions (first 10):\n------------------------------\n 1. 2025-06-18 | Total da fatura anterior | R$ 71,543.24\n 2. 2025-06-18 | Unknown transaction | R$ -71,543.24\n 3. 2025-06-18 | S Saldo financiado
+:selected: | R$ 0.00\n 4. 2025-06-18 | +
+E Encargos (financiamento + moratorio) | R$ 3,822.12\n 5. 2025-06-18 | +
+:selected: Lançamentos atuais | R$ 4,772.90\n 6. 2025-06-18 | ℮ Total desta fatura :selected: | R$ 8,595.02\n 7. 2025-06-18 | Valor total financiado | R$ 100.00\n 8. 2025-06-18 | Encargos | R$ 447.69\n 9. 2025-06-18 | Unknown transaction | R$ 53.80\n10. 2025-06-18 | Total a pagar | R$ 9,096.51\n
