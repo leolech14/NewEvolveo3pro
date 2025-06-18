@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Optional
+from decimal import Decimal
 
 from google.cloud import documentai
 from google.oauth2 import service_account
@@ -167,10 +168,9 @@ class GoogleDocumentAIExtractor(BaseExtractor):
             return PipelineResult(
                 transactions=[],
                 confidence_score=0.0,
+                pipeline_name=ExtractorType.GOOGLE_DOC_AI,
                 processing_time_ms=(end_time - start_time) * 1000 if start_time and end_time else 0,
-                extractor_type=self.extractor_type,
-                source_file=str(pdf_path),
-                error=f"Google Document AI extraction failed: {str(e)}"
+                error_message=f"Google Document AI extraction failed: {str(e)}"
             )
 
     def _parse_document(self, document: documentai.Document) -> list[Transaction]:
@@ -184,14 +184,25 @@ class GoogleDocumentAIExtractor(BaseExtractor):
         """
         transactions = []
         
-        # Strategy 1: Extract from entities if available
+        # Strategy 1: Use specialized table parser (works best for Form Parser)
+        try:
+            from ..postprocessors.google_table_parser import extract_transactions_from_docai
+            table_transactions = extract_transactions_from_docai(document)
+            if table_transactions:
+                transactions.extend(table_transactions)
+                return transactions  # If tables found, use them
+        except Exception as e:
+            # Continue with other methods if table parsing fails
+            pass
+        
+        # Strategy 2: Extract from entities if available
         transactions.extend(self._extract_from_entities(document))
         
-        # Strategy 2: Extract from tables if no entities found
+        # Strategy 3: Extract from tables (fallback method)
         if not transactions:
             transactions.extend(self._extract_from_tables(document))
         
-        # Strategy 3: Fallback to text parsing
+        # Strategy 4: Fallback to text parsing
         if not transactions:
             transactions.extend(self._extract_from_text(document))
         
@@ -238,12 +249,35 @@ class GoogleDocumentAIExtractor(BaseExtractor):
             description = descriptions[i][0] if i < len(descriptions) else "Transaction"
             
             if date or amount:  # At least one meaningful field
+                # Convert date string to date object
+                from datetime import date as date_class
+                if isinstance(date, str):
+                    parsed_date = normalize_date(date)
+                    if parsed_date:
+                        try:
+                            # Parse DD/MM/YYYY or DD/MM format
+                            parts = parsed_date.split('/')
+                            if len(parts) == 3:
+                                day, month, year = int(parts[0]), int(parts[1]), int(parts[2])
+                            elif len(parts) == 2:
+                                day, month = int(parts[0]), int(parts[1])
+                                year = 2024  # Default year
+                            else:
+                                continue
+                            date = date_class(year, month, day)
+                        except (ValueError, IndexError):
+                            date = date_class(2024, 1, 1)  # Fallback date
+                    else:
+                        date = date_class(2024, 1, 1)  # Fallback date
+                elif not date:
+                    date = date_class(2024, 1, 1)  # Fallback date
+                
                 transaction = Transaction(
                     date=date,
-                    amount_brl=amount,
+                    amount_brl=amount or Decimal("0.00"),
                     description=description,
                     category="UNKNOWN",
-                    extractor_type=self.extractor_type
+                    source_extractor=ExtractorType.GOOGLE_DOC_AI
                 )
                 transactions.append(transaction)
         
@@ -305,7 +339,7 @@ class GoogleDocumentAIExtractor(BaseExtractor):
                 amount_brl=amount,
                 description=description or "Transaction",
                 category="UNKNOWN",
-                extractor_type=self.extractor_type
+                source_extractor=ExtractorType.GOOGLE_DOC_AI
             )
         
         return None
@@ -318,7 +352,7 @@ class GoogleDocumentAIExtractor(BaseExtractor):
         patterns = ItauPatterns()
         raw_text = document.text
         
-        return patterns.extract_transactions(raw_text, self.extractor_type)
+        return patterns.extract_transactions(raw_text, ExtractorType.GOOGLE_DOC_AI)
 
     def _calculate_confidence(self, document: documentai.Document) -> float:
         """Calculate overall confidence score from Document AI results."""

@@ -7,7 +7,8 @@ Based on production field manual.
 import re
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date
+from decimal import Decimal
 
 
 @dataclass
@@ -214,3 +215,58 @@ class ItauPatterns:
     def is_category_line(cls, text: str) -> bool:
         """Check if line looks like a category/city line."""
         return bool(cls.RE_CAT.match(text))
+    
+    def extract_transactions(self, raw_text: str, extractor_type=None):
+        """Extract transactions from raw text for compatibility with Google extractor."""
+        from ..core.models import Transaction, ExtractorType
+        
+        transactions = []
+        lines = raw_text.split('\n')
+        
+        for i, line in enumerate(lines):
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Look for domestic transaction pattern
+            match = self.RE_DOM.match(line)
+            if match:
+                date_str, merchant, amount_str = match.groups()
+                
+                try:
+                    # Parse date (add current year if missing)
+                    if '/' in date_str:
+                        day, month = date_str.split('/')
+                        transaction_date = date(2024, int(month), int(day))  # Default to 2024
+                    else:
+                        continue
+                    
+                    # Parse amount
+                    amount = self.parse_amount(amount_str)
+                    if amount is None:
+                        continue
+                    
+                    # Look ahead for category/city info
+                    category = "DIVERSOS"
+                    city = ""
+                    if i + 1 < len(lines):
+                        next_line = lines[i + 1].strip()
+                        cat_match = self.RE_CAT.match(next_line)
+                        if cat_match:
+                            category, city = cat_match.groups()
+                    
+                    transaction = Transaction(
+                        date=transaction_date,
+                        description=merchant.strip(),
+                        amount_brl=Decimal(str(amount)),
+                        category=category.strip(),
+                        merchant_city=city.strip(),
+                        source_extractor=extractor_type or ExtractorType.GOOGLE_DOC_AI
+                    )
+                    transactions.append(transaction)
+                    
+                except (ValueError, TypeError) as e:
+                    # Skip malformed transactions
+                    continue
+        
+        return transactions

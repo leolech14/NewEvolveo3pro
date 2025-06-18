@@ -1,0 +1,35 @@
+PDFPlumber Extractor Output
+PDF: Itau_2024-12.pdf
+Transactions found: 176
+Page count: 6
+==================================================
+
+A992500005B
+PC -00
+LEONARDO BROCKSTEDT LECH
+Resumo da fatura em R$
+DOLOMITI 781
+101 - Planalto Total da fatura anterior 13.787,89
+14367900
+99250-000 Serafina Correa - RS
+Pagamento efetuado em 08/11/2024 - 13.787,89
+"LbÖ#!
+S Saldo financiado 0,00
+Postagem: 09/12/2024 +
+L Lançamentos atuais 14.121,52
+Vencimento: 10/12/2024
+= Total desta fatura 14.121,52
+Emissão: 03/12/2024
+091224 Previsão prox. Fechamento: 03/01/2025
+Titular LEONARDO BROCKSTEDT LECH
+Cartão 5234.XXXX.XXXX.6853 MASTERCARD BLACK
+O total da sua fatura é: Com vencimento em: Limite total de crédito:
+R$ 14.121,52 10/12/2024 Flexível
+Preparamos outras opçõesdepagamento abaixo eaofinal dafatura, válidas atéadatadevencimento:
+Pagamento mínimo: Parcelas fixas:
+R$ 766,70 R$1.683,68
++ 10x R$ 1.683,68
+Valor em reais % do total financiado Valor em reais % do total financiado
+Valor total financiado R$ 13.354,82 100,00% Valor total financiado R$ 14.363,66 100,00%
+Encargos R$ 1.378,22 - Valor solicitado R$ 14.121,52 98,31 %
+IOF R$ 88,40 -

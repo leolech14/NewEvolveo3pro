@@ -1,0 +1,52 @@
+Extraction Report\n==================\n\nExtractor: Camelot Table Extractor\nMethod: local\nSuccess: True\nProcessing Time: 4150ms\nConfidence: 84.26%\n\nTransactions Found: 80\n\nTransaction Details:\n-------------------\n 1. 2025-06-18 |  | R$ 0.00\n 2. 2025-06-18 |  | R$ 3,112,024.00\n 3. 2025-06-18 | Lançamentos: compras e saques
+RECARGAPAY  *LEONA04 | R$ 6,853.00\n 4. 2025-06-18 | DIVERSOS .SAO PAULO
+RECARGAPAY  *LEONA04/12 | R$ 28,050,506.00\n 5. 2025-06-18 | DIVERSOS .SAO PAULO
+RECARGAPAY  *LEONA04/12 | R$ 0.10\n 6. 2025-06-18 | DIVERSOS .SAO PAULO
+RECARGAPAY  *LEONA04/12 | R$ 0.06\n 7. 2025-06-18 | DIVERSOS .SAO PAULO
+RECARGAPAY  *LEONA04/12 | R$ 0.00\n 8. 2025-06-18 | DIVERSOS .SAO PAULO
+RECARGAPAY  *LEONA04/12 | R$ 0.27\n 9. 2025-06-18 | DIVERSOS .SAO PAULO
+RECARGAPAY  *LEONA04/12 | R$ 0.28\n10. 2025-06-18 | DIVERSOS .SAO PAULO
+RECARGAPAY  *LEONA04/12 | R$ 0.28\n11. 2025-06-18 | DIVERSOS .SAO PAULO
+Lançamentos no cartão (final 9 | R$ 0.28\n12. 2025-06-18 |  | R$ 0.28\n13. 2024-09-30 | PICPAY LBL INTEGRA04/12 | R$ 30,090,103.00\n14. 2024-10-01 | DIVERSOS .S o Paulo
+PICPAY LBL INTEGRA04/12 | R$ 1,100,103.00\n15. 2025-06-18 | DIVERSOS .S o Paulo | R$ 0.69\n16. 2025-06-18 | PICPAY LBL INTEGRA04/06
+DIVERSOS .S o Paulo | R$ 9,779.00\n17. 2024-06-16 | PICPAY LBL INTEGRA04/06
+DIVERSOS .S o Paulo | R$ 16,060,412.00\n18. 2024-06-16 | PICPAY LBL INTEGRA04/06
+DIVERSOS .S o Paulo | R$ 16,060,412.00\n19. 2025-06-18 | 17/06
+PICPAY LBL INTEGRA05/06 | R$ 18,060,406.00\n20. 2025-06-18 | 18/06
+PICPAY LBL INTEGRA05/06
+18/06
+PICPAY LBL INT | R$ 0.98\n21. 2025-06-18 | 06/07
+FARMACIA SAO JOAO 04/06 | R$ 3,549.00\n22. 2024-07-05 | 07/07
+RECARGAPAY LEONARD04/06
+07/07
+RECARGAPAY LEO | R$ 5,070,306.00\n23. 2025-06-18 | 07/07
+RECARGAPAY LEONARD04/06 | R$ 0.07\n24. 2024-07-07 | 17/07
+RECARGAPAY  *LEONA04/06 | R$ 7,070,306.00\n25. 2024-07-07 | 17/07
+RECARGAPAY  *LEONA04/06
+27/09
+FARMACIA SAO J | R$ 7,070,306.00\n26. 2025-06-18 | 28/09
+FARMACIA SAO JOAO 02/04 | R$ 0.07\n27. 2024-07-17 | Próxima fatura | R$ 17,070,306.00\n28. 2024-07-17 | Demais faturas
+Total para próximas faturas | R$ 17,070,306.00\n29. 2025-06-18 |  | R$ 0.17\n30. 2024-10-01 | Limites de crédito | R$ 110.00\n31. 2025-06-18 | Limite total de crédito | R$ 3,549.00\n32. 2025-06-18 | Limite total utilizado | R$ 1,929.00\n33. 2025-06-18 | Limite máximo para saque no Brasil | R$ 2,809.00\n34. 2024-09-28 | O limite total de crédito é composto pelos limites | R$ 2,809.00\n35. 2025-06-18 | nossos canais. | R$ 1,929.00\n36. 2025-06-18 |  | R$ 5,570.00\n37. 2025-06-18 | Encargos cobrados nesta fatura | R$ 2,909.00\n38. 2025-06-18 | Juros do rotativo
+Juros de mora | R$ 0.00\n39. 2025-06-18 | Multa por atraso
+IOF de financiamento
+(0,38 % + 0, | R$ 5.76\n40. 2024-10-03 | período (10/10 a 09/11) | R$ 310.00\n41. 2024-05-28 | Valor da dívida origem:
+Juros e encargos financeir | R$ 28,050,606.00\n42. 2024-06-10 | % juros sobre valor original dívida: | R$ 1,006,050,616,060,512.00\n43. 2024-06-16 |  | R$ 1,606,051,216,060,512.00\n44. 2024-06-16 |  | R$ 16,060,512.00\n45. 2024-06-16 | limite de juros é considerado individualmente por  | R$ 1,606,051,216,060,512.00\n46. 2024-06-16 |  | R$ 1,606,051,216,060,512.00\n47. 2024-06-16 |  | R$ 1,606,051,216,060,512.00\n48. 2024-06-17 |  | R$ 1,706,051,217,060,512.00\n49. 2024-06-17 |  | R$ 17,060,505.00\n50. 2025-06-18 | 17/06
+PICPAY LBL INTEGRA05/06 | R$ 18,060,406.00\n51. 2025-06-18 | 18/06
+PICPAY LBL INTEGRA05/06
+18/06
+PICPAY LBL INT | R$ 0.98\n52. 2025-06-18 | 06/07
+FARMACIA SAO JOAO 04/06 | R$ 3,549.00\n53. 2024-07-05 | 07/07
+RECARGAPAY LEONARD04/06
+07/07
+RECARGAPAY LEO | R$ 5,070,306.00\n54. 2025-06-18 | 07/07
+RECARGAPAY LEONARD04/06 | R$ 0.07\n55. 2024-07-07 | 17/07
+RECARGAPAY  *LEONA04/06 | R$ 7,070,306.00\n56. 2024-07-07 | 17/07
+RECARGAPAY  *LEONA04/06
+27/09
+FARMACIA SAO J | R$ 7,070,306.00\n57. 2025-06-18 | 28/09
+FARMACIA SAO JOAO 02/04 | R$ 0.07\n58. 2024-07-17 | Próxima fatura | R$ 17,070,306.00\n59. 2024-07-17 | Demais faturas
+Total para próximas faturas | R$ 17,070,306.00\n60. 2025-06-18 |  | R$ 0.17\n61. 2024-10-01 | Limites de crédito | R$ 110.00\n62. 2025-06-18 | Limite total de crédito | R$ 3,549.00\n63. 2025-06-18 | Limite total utilizado | R$ 1,929.00\n64. 2025-06-18 | Limite máximo para saque no Brasil | R$ 2,809.00\n65. 2024-09-28 | O limite total de crédito é composto pelos limites | R$ 2,809.00\n66. 2025-06-18 | nossos canais. | R$ 1,929.00\n67. 2025-06-18 |  | R$ 5,570.00\n68. 2025-06-18 | Encargos cobrados nesta fatura | R$ 2,909.00\n69. 2025-06-18 | Juros do rotativo
+Juros de mora | R$ 0.00\n70. 2025-06-18 | Multa por atraso
+IOF de financiamento
+(0,38 % + 0, | R$ 5.76\n71. 2024-10-03 | período (10/10 a 09/11) | R$ 310.00\n72. 2024-05-28 | Valor da dívida origem:
+Juros e encargos financeir | R$ 28,050,606.00\n73. 2024-06-10 | % juros sobre valor original dívida: | R$ 1,006,050,616,060,512.00\n74. 2024-06-16 |  | R$ 1,606,051,216,060,512.00\n75. 2024-06-16 |  | R$ 16,060,512.00\n76. 2024-06-16 | limite de juros é considerado individualmente por  | R$ 1,606,051,216,060,512.00\n77. 2024-06-16 |  | R$ 1,606,051,216,060,512.00\n78. 2024-06-16 |  | R$ 1,606,051,216,060,512.00\n79. 2024-06-17 |  | R$ 1,706,051,217,060,512.00\n80. 2024-06-17 |  | R$ 17,060,505.00\n\nGenerated: 2025-06-18 14:46:38\n

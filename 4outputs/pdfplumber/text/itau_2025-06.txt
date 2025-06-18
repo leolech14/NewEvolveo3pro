@@ -1,0 +1,39 @@
+PDFPlumber Extractor Output
+PDF: itau_2025-06.pdf
+Transactions found: 218
+Page count: 8
+==================================================
+
+•
+Personnalitê
+------------------------------------------------------------------------------------------------------
+1 1
+1 1 1 1
+1 1 1 1
+05817000
+"U5*#!
+A990501204B
+PC-00
+LEONARDOBROCKSTEDTLECH
+AVRUIBARBOSA70 ResumodafaturaemR$
+502-PETROPOLIS Totaldafaturaanterior 20.860,60
+99050-120 PASSOFUNDO-RS
+Pagamentoefetuadoem06/05/2025 -20.860,60
+SSaldofinanciado 0,00
++
+Postagem:04/06/2025 LLançamentosatuais 15.326,81
+Vencimento:10/06/2025
+=Totaldestafatura 15.326,81
+Emissão:03/06/2025
+040625 Previsãoprox.Fechamento:03/07/2025
+Titular LEONARDOBROCKSTEDTLECH
+Cartão 5234.XXXX.XXXX.6853MASTERCARDBLACK
+Ototaldasuafaturaé: Comvencimentoem: Limitetotaldecrédito:
+R$ 15.326,81 10/06/2025 R$29.950,00
+Preparamosoutrasopçõesdepagamentoabaixoeaofinaldafatura,válidasatéadatadevencimento:
+Pagamentomínimo: Parcelasfixas:
+R$1.532,69 R$1.829,38
++ 10xR$1.829,38
+Valoremreais %dototalfinanciado Valoremreais %dototalfinanciado
+Valortotalfinanciado R$13.794,12 100,00% Valortotalfinanciado R$15.590,55 100,00%
+Encarg

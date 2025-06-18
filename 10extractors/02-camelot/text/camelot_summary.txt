@@ -1,4 +1,4 @@
-Extraction Summary - Camelot\n==================================================\n\nSuccess: True\nTransactions: 80\nConfidence: 84.26%\nProcessing Time: 4500ms\nGenerated: 2025-06-18 12:00:33\n\nSample Transactions (first 10):\n------------------------------\n 1. 2025-06-18 |  | R$ 0.00\n 2. 2025-06-18 |  | R$ 3,112,024.00\n 3. 2025-06-18 | Lançamentos: compras e saques
+Extraction Summary - Camelot\n==================================================\n\nSuccess: True\nTransactions: 80\nConfidence: 84.26%\nProcessing Time: 4500ms\nGenerated: 2025-06-18 14:47:28\n\nSample Transactions (first 10):\n------------------------------\n 1. 2025-06-18 |  | R$ 0.00\n 2. 2025-06-18 |  | R$ 3,112,024.00\n 3. 2025-06-18 | Lançamentos: compras e saques
 RECARGAPAY | R$ 6,853.00\n 4. 2025-06-18 | DIVERSOS .SAO PAULO
 RECARGAPAY  *LEONA04 | R$ 28,050,506.00\n 5. 2025-06-18 | DIVERSOS .SAO PAULO
 RECARGAPAY  *LEONA04 | R$ 0.10\n 6. 2025-06-18 | DIVERSOS .SAO PAULO

@@ -1,0 +1,112 @@
+Camelot Extractor Output
+PDF: Itau_2024-12.pdf
+Transactions found: 54
+==================================================
+
+ |  | O pagamento obrigatório é composto pelo saldo do crédito rotativo e respectivos encargos incidentes no período (R$ 28,88), prestações referentes a
+parcelamentos do saldo devedor de períodos anteriores (R$ 0,00) e valor mínimo de novas transações (R$ 737,82). Para entender mais sobre o
+ |  | Previsão do próximo fechamento:  03/01/2025.
+ | Lançamentos: compras e saques
+STREET WEAR COMPAN02/10 | Lançamentos: compras e saques
+LEONARDO B LECH (final 6853)
+ | VESTUÁRIO .MARAU
+FARMACIA SAO JOAO 02/06 | DATA
+10/06
+ | SAÚDE .PASSO FUNDO
+FARMACIA SAO JOAO | 06/07
+ | SAÚDE .PASSO FUNDO
+STREET WEAR COMPAN02/10 | 27/09
+ | VESTUÁRIO .MARAU
+FARMACIA SAO JOAO 02/06 | 28/09
+ | SAÚDE .PASSO FUNDO
+FARMACIA SAO JOAO | 30/09
+ | SAÚDE .PASSO FUNDO
+LIG AERO          02/05 | 01/10
+ | DIVERSOS .BRASILIA
+ZARA BRASIL       02/05 | 03/10
+ | VESTUÁRIO .BRASILIA
+APPLE.COM/BILL | 03/10
+ | HOBBY .SAO PAULO
+APPLE.COM/BILL | 07/10
+ | HOBBY .SAO PAULO
+IFD*IFOOD CLUB | 07/10
+ | ALIMENTAÇÃO .Osasco
+PANVEL FARMACIAS  01/03 | 13/10
+ | SAÚDE .
+BUFFON 25 | 13/10
+ | VEÍCULOS .PASSO FUNDO
+IFD*MISO DELIVERY LTDA | 14/10
+ | VEÍCULOS .PASSO FUNDO
+FARMACIA SAO JOAO 01/06 | 14/10
+ | SAÚDE .
+IFD*DA SILVA  SAGGIORA | 15/10
+ | Lançamentos: compras e saques
+02/12
+FARMACIA SAO JOAO 01/06 | Lançamentos: compras e saques
+14/11
+ | SAÚDE .
+Lançamentos no cartão (final 6853) | 14/11
+ |  | 15/11
+ | 16/06
+RECARGAPAY  *LEONA06/12 | 15/11
+ | DIVERSOS .SAO PAULO
+16/06
+RECARGAPAY  *LEONA06/12 | 15/11
+ | DIVERSOS .SAO PAULO | 16/11
+ | 16/06
+RECARGAPAY  *LEONA06/12 | 16/11
+ | DIVERSOS .SAO PAULO
+16/06
+RECARGAPAY  *LEONA06/12 | 17/11
+ | DIVERSOS .SAO PAULO | 17/11
+ | 16/06
+RECARGAPAY  *LEONA06/12 | 17/11
+ | DIVERSOS .SAO PAULO
+16/06
+RECARGAPAY  *LEONA06/12 | 18/11
+ | DIVERSOS .SAO PAULO | 19/11
+ | 16/06
+RECARGAPAY  *LEONA06/12 | 19/11
+ | DIVERSOS .SAO PAULO
+Lançamentos no cartão (final 9779) | 19/11
+ |  | 20/11
+ | 17/06
+PICPAY LBL INTEGRA06/12 | 20/11
+ | DIVERSOS .S o Paulo
+17/06
+PICPAY LBL INTEGRA06/12 | 21/11
+ | DIVERSOS .S o Paulo | 21/11
+ | 18/06
+PICPAY LBL INTEGRA06/06 | 23/11
+ | DIVERSOS .S o Paulo
+18/06
+PICPAY LBL INTEGRA06/06 | 23/11
+ | DIVERSOS .S o Paulo | 24/11
+ | Lançamentos no cartão (final 9835) | 24/11
+ | LEONARDO B LECH (final 3549) | 24/11
+ | DATA
+ESTABELECIMENTO
+05/07
+RECARGAPAY LEONARD05/06 | 25/11
+ | DIVERSOS .SAO PAULO | 25/11
+ | 07/07
+RECARGAPAY LEONARD05/06 | 25/11
+ | DIVERSOS .SAO PAULO
+07/07
+RECARGAPAY LEONARD05/06 | 25/11
+ | DIVERSOS .SAO PAULO | 26/11
+ | 17/07
+RECARGAPAY  *LEONA05/06 | 26/11
+ | DIVERSOS .SAO PAULO
+17/07
+RECARGAPAY  *LEONA05/06 | 26/11
+ | DIVERSOS .SAO PAULO | 27/11
+ | 15/11
+Disney Plus | 28/11
+ | DIVERSOS .SAO PAULO
+19/11
+VIACAO OURO E PRAT01/03 | 01/12
+ | VEÍCULOS . | 01/12
+ | 25/11
+MERCADOLIVRE*ARMAZEMB | 02/12
+ | ALIMENTAÇÃO .Osasco | 02/12

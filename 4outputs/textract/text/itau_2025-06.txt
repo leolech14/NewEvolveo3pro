@@ -1,0 +1,19 @@
+Textract Extractor Output
+PDF: itau_2025-06.pdf
+Transactions found: 12
+Total blocks: 1000
+Table count: 3
+==================================================
+
+Pagamento efetuado em 06/05/2025 | Unknown transaction | 20.860,60
+ | Saldo financiado | 0,00
+ | Lançamentos atuais | 15.326,81
+ | Total desta fatura | 15.326,81
+ | Valor total financiado | 100,00%
+ | Encargos | R$ 1.448,38
+ | Unknown transaction | R$ 95,94
+ | Total a pagar | R$ 16.871,13
+ | Valor total financiado | 100,00%
+ | Valor solicitado | 98,31 %
+ | Unknown transaction | 1,69 %
+ | Total a pagar | R$ 20.123,18

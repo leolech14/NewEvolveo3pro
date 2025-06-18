@@ -1,0 +1,1 @@
+Extraction Report\n==================\n\nExtractor: Google OCR Processor\nMethod: google\nSuccess: False\nProcessing Time: 0ms\nConfidence: 0.00%\nProcessor ID: b6aa561c7373e958\n\nError: Google Cloud billing not enabled. Processor ready when billing enabled.\n\nTransactions Found: 0\n\n\nGenerated: 2025-06-18 14:47:07\n

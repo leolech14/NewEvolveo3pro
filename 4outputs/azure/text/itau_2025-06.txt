@@ -1,0 +1,63 @@
+Azure Document Intelligence Extractor Output
+PDF: itau_2025-06.pdf
+Transactions found: 52
+Model ID: prebuilt-layout
+Table count: 8
+==================================================
+
+Total da fatura anterior | 20.860,60
+Pagamento efetuado em 06/05/2025 | - 20.860,60
+S Saldo financiado
+:selected: | 0,00
++
+Lançamentos atuais
+:selected: | 15.326,81
+e Total desta fatura
+:unselected: | 15.326,81
+R$ 15.326,81 | 10/06/2025 | R$29.950,00
+Valor total financiado |  | R$ 13.794,12 | 100,00%
+Encargos |  | R$ 1.448,38 | -
+ | IOF | R$ 95,94 | -
+Total a pagar |  | R$ 16.871,13 | -
+Juros: 10,50 % am - 236,96 % |  | aa CET: | 11,13 % am - 260,93 % aa
+Valor total financiado | R$ 15.590,55 | 100,00%
+Valor solicitado | R$ 15.326,81 | 98,31 %
+IOF | R$ 263,74 | 1,69 %
+Total a pagar | R$ 20.123,18 -
+Juros: 5,45 % am - 90,72 % aa | CET: 6,34 % am - 111,26 % aa
+(=) Valor do Documento | R$ 15.326,81
+LEONARDO B LECH (final 6853)
+<B16/10 | STREET WEAR COMPAN08/10 VESTUÁRIO .MARAU | 65,97
+$@19/10 | STREET WEAR COMPAN08/10 VESTUÁRIO .MARAU | 49,99
+20/12 | Manual Saude 06/06 SAÚDE .BARUERI | 99,12
+@21/12 | 297 BF PFUN 06/10 VESTUÁRIO .PASSO FUNDO | 137,97
+304/01 | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 23,62
+11/01 | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 39,51
+$@13/01 :unselected: | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 113,67
+20/01 | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 90,66
+922/01 | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 38,34
+23/01 | MP *OCEANDROP 05/06 ALIMENTAÇÃO .Balnerio Cam | 111,18
+905/02 | STREET WEAR COMPAN04/10 VESTUÁRIO .PASSO FUNDO | 74,99
+906/02 | FARMACIA SAO JOAO 04/06 SAÚDE .PASSO FUNDO | 21,29
+6011/02 | DLOSS TRACKFIELD P04/06 VESTUÁRIO .PASSO FUNDO | 203,25
+918/02 | FARMACIA SAO JOAO 04/06 SAÚDE .PASSO FUNDO | 54,25
+@18/02 | FARMACIA SAO JOAO 04/06 SAÚDE .PASSO FUNDO | 46,74
+₹825/02 :selected: | FARMACIA SAO JOAO 04/06 SAÚDE .PASSO FUNDO | 33,12
+009/03 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 37,19
+16/03 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 67,07
+17/03 | PANVEL FARMACIAS 03/03 SAÚDE .PASSO FUNDO | 44,07
+920/03 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 65,57
+6923/03 | FARMACIA SAO JOAO 03/04 SAÚDE .PASSO FUNDO | 20,86
+:23/03 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 77,66
+@30/03 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 94,52
+6931/03 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 104,71
+SD18/04 | FARMACIA SAO JOAO 02/06 SAÚDE .PASSO FUNDO | 99,98
+@18/04 | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,15
+1820/04 | FARMACIA SAO JOAO 02/06 SAÚDE .PASSO FUNDO | 20,89
+920/04 | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,15
+₹822/04 | ATTIVO MEDICAMENTO02/06 SAÚDE .PASSO FUNDO | 107,23
+822/04 | FARMACIA SAO JOAO 02/06 SAÚDE .PASSO FUNDO | 126,73
+6902/05 | FARMACIA SAO JOAO 02/06 SAÚDE .SOLEDADE | 82,35
+ | 0800 720 3030 (demais localidades, somente chamadas de telefone fixo) Todos os dias, 24h por dia. |  | Ouvidoria 0800 570 0011
+ |  |  | se não ficar satisfeito com a solução apresentada, de posse do protocolo, contate a Ouvidoria. Dias úteis, das 9h às 18h
+ | Consultas, informações e serviços transacionais. |  | Deficiente auditivo/fala 0800 722 1722 Todos os dias, 24h

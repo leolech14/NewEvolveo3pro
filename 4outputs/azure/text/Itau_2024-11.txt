@@ -1,0 +1,64 @@
+Azure Document Intelligence Extractor Output
+PDF: Itau_2024-11.pdf
+Transactions found: 50
+Model ID: prebuilt-layout
+Table count: 7
+==================================================
+
+Total da fatura anterior | 8.595,02
+Pagamento efetuado em 09/10/2024 | - 8.595,02
+S Saldo financiado
+:selected: | 0,00
++
+:selected: Lançamentos atuais | 13.787,89
+Total desta fatura
+:unselected: | 13.787,89
+Valor total financiado | R$ 13.098,50 | 100,00%
+Encargos | R$ 1.308,54 | -
+IOF | R$ 86,31 | -
+Total a pagar | R$ 15.182,74 | -
+Juros: 9,99 % am - 218,52 % aa | CET: | 10,62 % am - 241,29 % aa
+Valor total financiado | R$ 14.023,81 | 100,00%
+Valor solicitado | R$ 13.787,89 | 98,32 %
+IOF | R$ 235,92 | 1,68 %
+Total a pagar | R$ 18.071,24 -
+Juros: 5,45 % am - 90,72 % aa | CET: 6,30 % am - 110,29 % aa
+10/11/2024 | 00406694061/0139781 |  | FT | N | 03/11/2024 | 175/06694061-0
+ | 5/0 | R$ |  |  |  | R$ 13.787,89
+LEONARDO B LECH (final 6853)
+:28/05 | FARMACIA SAO JOAO 06/06 SAÚDE .CAXIAS DO SUL | 39,40
+10/06 | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 87,64
+006/07 | FARMACIA SAO JOAO 04/06 SAÚDE .PASSO FUNDO | 81,09
+927/09 | FARMACIA SAO JOAO 02/04 SAÚDE .PASSO FUNDO | 20,78
+28/09 :unselected: | FARMACIA SAO JOAO 02/04 SAÚDE .PASSO FUNDO | 21,73
+28/09 | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,09
+30/09 | PANVEL FARMACIAS 02/03 SAÚDE .PASSO FUNDO | 42,70
+801/10 | PANVEL FARMACIAS 02/03 SAÚDE .PASSO FUNDO | 127,05
+001/10 :unselected: | PANVEL FARMACIAS SAÚDE .PASSO FUNDO | - 0,04
+SE03/10 :unselected: | IPLACE MOBILE 01/04 VESTUÁRIO . | 57,25
+003/10 :unselected: | FARMACIA SAO JOAO 01/06 SAÚDE. | 67,08
+@03/10 | PASSO FUNDO SHOPPING VEÍCULOS .PASSO FUNDO | 9,00
+@03/10 | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,05
+04/10 | APPLE.COM/BILL HOBBY .SAO PAULO | 39,90
+$804/10 | PANVEL FARMACIAS SAÚDE .PASSO FUNDO | 103,17
+04/10 | APPLE.COM/BILL HOBBY .SAO PAULO | - 20,57
+306/10 | REFUGIO SKATE PARK LTD ALIMENTAÇÃO .PASSO FUNDO | 264,00
+06/10 | APPLE.COM/BILL HOBBY .SAO PAULO | 69,90
+SB07/10 | BOURBON PASSO FUNDO ALIMENTAÇÃO .PASSO FUNDO | 297,43
+907/10 | PANVEL FARMACIAS 01/03 SAÚDE. | 43,38
+08/10 | BOURBON PASSO FUNDO ALIMENTAÇÃO .PASSO FUNDO | 319,24
+09/10 | IFD*ZANINI E MONTENEGR ALIMENTAÇÃO .Passo Fundo | 96,11
+10/10 | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | 82,89
+@10/10 | PANVEL FARMACIAS SAÚDE .PASSO FUNDO | 114,63
+11/10 | APPLE.COM/BILL HOBBY .SAO PAULO | 124,90
+₹911/10
+:selected: | THE BOWLER SPORTS BAR ALIMENTAÇÃO .Passo Fundo | 41,80
+₹@11/10
+:selected: | REFUGIO SKATE PARK LTD ALIMENTAÇÃO .PASSO FUNDO | 66,00
+911/10
+:selected: | IFD*IFOOD CLUB ALIMENTAÇÃO .Osasco | 4,95
+$@11/10 | IFD*ZANINI E MONTENEGR ALIMENTAÇÃO .Passo Fundo | 87,50
+₹12/10 | LEAL CENTER COMERCIO ALIMENTAÇÃO .SOLEDADE | 79,80
+12/10 | POSTOS TRADICAO VEÍCULOS .PASSO FUNDO | 301,20
+ |  |  | se não
+posse do protocolo, contate a Ouvidoria. Dias úteis, das 9h às 18h Deficiente auditivo/fala 0800 722 1722 Todos os dias, 24h

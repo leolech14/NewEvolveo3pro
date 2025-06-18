@@ -1,0 +1,71 @@
+Azure Document Intelligence Extractor Output
+PDF: Itau_2025-04.pdf
+Transactions found: 50
+Model ID: prebuilt-layout
+Table count: 8
+==================================================
+
+Total da fatura anterior |  | 7.704,47
+P Pagamentos efetuados |  | - 15.408,94
+S Saldo financiado
+:selected: |  | - 7.704,47
++
+:selected: | Lançamentos atuais | 16.937,09
+Total desta fatura
+:unselected: |  | 9.232,62
+R$ 9.232,62 | 10/04/2025 | R$29.950,00
+Valor total financiado | R$ 8.770,98 | 100,00%
+Encargos | R$ 920,95 | -
+IOF | R$ 57,79 | -
+Total a pagar | R$ 10.211,36 -
+Juros: 10,50 % am - 236,96 % aa | CET: 11,13 % am - 260,93 % aa
+Valor total financiado | R$ 9.391,59 | 100,00%
+Valor solicitado | R$ 9.232,62 | 98,31 %
+IOF | R$ 158,97 | 1,69 %
+Total a pagar | R$ 12.124,31 -
+Juros: 5,45 % am - 90,72 % aa | CET: 6,35 % am - 111,50 % aa
+10/04/2025 | 00406694061/0152725 | FT | N | 03/04/2025 | 175/06694061-0
+ | 5/0 R$ |  |  |  | R$ 9.232,62
+10/03 PAGAMENTO EFETUADO 7117 | - 7.704,47
+10/03 PAGAMENTO EFETUADO 7117 | - 7.704,47
+Total dos pagamentos | - 15.408,94
+ | LEONARDO B LECH (final 6853)
+303/10
+:unselected: |  | FARMACIA SAO JOAO 06/06 SAÚDE .PASSO FUNDO | 67,08
+:13/10
+:unselected: |  | FARMACIA SAO JOAO 06/06 SAÚDE .SOLEDADE | 22,91
+16/10
+:selected: |  | STREET WEAR COMPAN06/10 VESTUÁRIO .MARAU | 65,97
+18/10
+:unselected: |  | FARMACIA SAO JOAO 06/06 SAÚDE .PASSO FUNDO | 30,29
+19/10
+:selected: |  | STREET WEAR COMPAN06/10 VESTUÁRIO .MARAU | 49,99
+19/10
+:selected: |  | FARMACIA SAO JOAO 06/06 SAÚDE .PASSO FUNDO | 78,52
+13/11
+:selected: |  | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 44,78
+-24/11
+:unselected: |  | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 22,65
+02/12 :unselected: |  | FARMACIA SAO JOAO 05/06 SAÚDE .PASSO FUNDO | 20,39
+05/12
+:unselected: |  | FARMACIA SAO JOAO 04/05 SAÚDE .PASSO FUNDO | 20,07
+007/12 |  | FARMACIA SAO JOAO 04/05 SAÚDE .PASSO FUNDO | 22,78
+20/12 |  | Manual Saude 04/06 SAÚDE .BARUERI | 99,12
+€821/12 | 297 BF PFUN 04/10 VESTUÁRIO .PASSO FUNDO | 137,97
+FB21/12 | PANVEL FILIAL 395 04/04 SAÚDE .PASSO FUNDO | 117,29
+826/12 | FARMACIA SAO JOAO 04/05 SAÚDE .SOLEDADE | 59,41
+929/12 | DIVINA TERRA XANGR04/04 ALIMENTAÇÃO .XANGRI-LA | 112,99
+004/01 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 23,62
+804/01 | FARMACIA SAO JOAO 03/04 SAÚDE .PASSO FUNDO | 22,49
+07/01 | PAG*InnoGame 03/03 TURISMO E ENTRETENIM.Sao Paulo | 26,67
+11/01 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 39,51
+SP13/01 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 113,67
+920/01
+:selected: | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 90,66
+B22/01 | PERFECT HEALTH 03/04 ALIMENTAÇÃO .PASSO FUNDO | 120,25
+SE22/01
+:selected: | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 38,34
+23/01 | MP *OCEANDROP 03/06 ALIMENTAÇÃO .Balnerio Cam | 111,18
+₹05/02 | STREET WEAR COMPAN02/10 VESTUÁRIO .PASSO FUNDO | 74,99
+06/02 | FARMACIA SAO JOAO 02/06 SAÚDE .PASSO FUNDO | 21,29
+₹06/02 | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,05

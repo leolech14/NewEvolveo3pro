@@ -1,0 +1,72 @@
+Azure Document Intelligence Extractor Output
+PDF: Itau_2025-01.pdf
+Transactions found: 53
+Model ID: prebuilt-layout
+Table count: 7
+==================================================
+
+Total da fatura anterior | 14.121,52
+Pagamento efetuado em 12/12/2024 | - 14.121,52
+S Saldo financiado
+:selected: | 0,00
++
+E :selected: Encargos (financiamento + moratorio) | 439,92
+:selected: Lançamentos atuais | 9.255,73
+℮ Total desta fatura :selected: | 9.695,65
+Valor total financiado | R$ 8.724,23 | 100,00%
+Encargos | R$ 900,34 | -
+IOF | R$ 60,69 | -
+Total a pagar | R$ 10.656,68 | -
+Juros: 10,32 % am - 230,34 % aa CET: |  | 10,95 % am - 253,88 % aa
+Valor total financiado | R$ 9.861,32 | 100,00%
+Valor solicitado | R$ 9.695,65 | 98,32 %
+IOF | R$ 165,67 | 1,68 %
+Total a pagar | R$ 12.702,36 -
+Juros: 5,45 % am - 90,72 % aa | CET: 6,29 % am - 110,05 % aa
+10/01/2025 | 00406694061/0144932 | FT | N | 03/01/2025 | 175/06694061-0
+ | 5/0 R$ |  |  |  | R$ 9.695,65
+LEONARDO B LECH (final 6853)
+,06/07 | FARMACIA SAO JOAO 06/06 SAÚDE .PASSO FUNDO | 81,09
+827/09 :unselected: | FARMACIA SAO JOAO 04/04 SAÚDE .PASSO FUNDO | 20,78
+928/09 | FARMACIA SAO JOAO 04/04 SAÚDE .PASSO FUNDO | 21,73
+803/10 | IPLACE MOBILE 03/04 VESTUÁRIO .PASSO FUNDO | 57,25
+903/10 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 67,08
+907/10 | PANVEL FARMACIAS 03/03 SAÚDE .PASSO FUNDO | 43,38
+13/10 | FARMACIA SAO JOAO 03/06 SAÚDE .SOLEDADE | 22,91
+914/10 | PAQUETA 03/05 VESTUÁRIO .PASSO FUNDO | 70,02
+@15/10 :unselected: | AMMF COMERCIO DE A03/04 ALIMENTAÇÃO .PASSO FUNDO | 131,00
+916/10 | STREET WEAR COMPAN03/10 VESTUÁRIO .MARAU | 65,97
+918/10 | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 30,29
+919/10 | STREET WEAR COMPAN03/10 VESTUÁRIO .MARAU | 49,99
+$@19/10 :unselected: | FARMACIA SAO JOAO 03/06 SAÚDE .PASSO FUNDO | 78,52
+:23/10 | LIG AERO 03/05 | 57,98
+$824/10 | ZARA BRASIL 03/05 | 221,10
+@11/11
+:selected: | PANVEL FARMACIAS 02/03 SAÚDE .PASSO FUNDO | 58,88
+11/11
+:selected: | PANVEL FARMACIAS SAÚDE .PASSO FUNDO | - 0,02
+@13/11
+:selected: | FARMACIA SAO JOAO 02/06 SAÚDE .PASSO FUNDO | 44,78
+6913/11
+:selected: | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,10
+16/11 | INSIDER COME*Insid02/03 VESTUÁRIO .SAO PAULO | 54,42
+916/11
+:selected: | PANVEL FARMACIAS 02/03 SAÚDE .PASSO FUNDO | 43,54
+₹824/11
+:selected: | FARMACIA SAO JOAO 02/06 SAÚDE .PASSO FUNDO | 22,65
+₹824/11
+:selected: | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,20
+₹@28/11
+:selected: | PANVEL FARMACIAS 02/03 SAÚDE .PASSO FUNDO | 38,21
+€902/12 | FARMACIA SAO JOAO 02/06 SAÚDE .PASSO FUNDO | 20,39
+€802/12 | FARMACIA SAO JOAO SAÚDE .PASSO FUNDO | - 0,15
+804/12
+:selected: | SIM PF CIDADE NOVA VEÍCULOS .PASSO FUNDO | 4,49
+$805/12
+:selected: | PLAY TENNIS HOBBY .PASSO FUNDO | 49,90
+$805/12 | BARBEARIA INDEPENDENC DIVERSOS .PASSO FUNDO | 65,00
+€805/12 | FARMACIA SAO JOAO 01/05 SAÚDE. | 20,07
+€805/12 | PANVEL FARMACIAS 01/03 SAÚDE . | 36,44
+ |  |  | Ouvidoria 0800 570 0011 se não ficar satisfeito com a solução apresentada, de posse
+ | Todos os dias, 24h por dia. |  | do protocolo, contate a Ouvidoria. Dias úteis, das 9h às 18h
+ | Consultas, informações e serviços transacionais. |  | Deficiente auditivo/fala 0800 722 1722 Todos os dias, 24h
