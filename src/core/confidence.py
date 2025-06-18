@@ -7,9 +7,18 @@ from typing import Callable, Any, Union
 import pickle
 from pathlib import Path
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.isotonic import IsotonicRegression  # type: ignore
-import joblib
+# Optional heavy deps ---------------------------------------------------------
+try:
+    from sklearn.linear_model import LogisticRegression  # type: ignore
+    from sklearn.isotonic import IsotonicRegression  # type: ignore
+except ImportError:  # pragma: no cover – sklearn optional at runtime
+    LogisticRegression = None  # type: ignore[assignment]
+    IsotonicRegression = None  # type: ignore[assignment]
+
+try:
+    import joblib  # type: ignore
+except ImportError:  # pragma: no cover
+    joblib = None  # type: ignore
 
 from .models import ExtractorType
 
@@ -32,17 +41,19 @@ class ConfidenceCalibrator:
 
     def __init__(self, model_path: str = "models/confidence_platt.joblib"):
         self.model_path = model_path
-        self.model: LogisticRegression | None = self._load()
+        self.model: Any | None = self._load()
         # File where per-extractor isotonic regressors are persisted
         self.calibration_file: Path = Path("models/calibrations.pkl")
         # Ensure internal mapping exists even if no calibrations trained yet
-        self.calibrators: dict[ExtractorType, Union[IsotonicRegression, Callable[[float], float]]] = {}
+        self.calibrators: dict[ExtractorType, Union[Any, Callable[[float], float]]] = {}
 
     def _load(self):
-        try:
-            return joblib.load(self.model_path)
-        except FileNotFoundError:
-            return None
+        if joblib is not None:
+            try:
+                return joblib.load(self.model_path)
+            except FileNotFoundError:
+                return None
+        return None
 
     def score(self, features: list[float]) -> float:
         if self.model:
