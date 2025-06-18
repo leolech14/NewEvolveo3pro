@@ -83,19 +83,18 @@ class PdfplumberExtractor(BaseExtractor):
     ) -> tuple[list[Transaction], dict[str, Any], int]:
         """Core extraction using road-tested pdfplumber approach."""
         transactions = []
-        all_words = []
+        all_words: list[dict] = []
         current_card = ""
+        collected_text_lines: list[str] = []
 
         with pdfplumber.open(pdf_path) as pdf:
             page_count = len(pdf.pages)
 
             for page_num, page in enumerate(pdf.pages):
                 try:
-                    # Apply crop box: trim header/footer
-                    working = (
-                        page.crop((0, 90, page.width, page.height - 70))
-                        .dedupe_chars()
-                        .extract_words(x_tolerance=2, y_tolerance=1)
+                    # Extract all words (no cropping – avoid missing rows on variant layouts)
+                    working = page.dedupe_chars().extract_words(
+                        x_tolerance=2, y_tolerance=1
                     )
                     
                     if working:
@@ -107,6 +106,7 @@ class PdfplumberExtractor(BaseExtractor):
                             card = ItauPatterns.extract_card_last4(page_text)
                             if card:
                                 current_card = card
+                                collected_text_lines.extend(page_text.splitlines())
 
                 except Exception as e:
                     print(f"Error processing page {page_num + 1}: {e}")
@@ -115,8 +115,17 @@ class PdfplumberExtractor(BaseExtractor):
         # Group words into rows by Y coordinate
         rows = ItauPatterns.group_by_y(all_words, tolerance=3.0)
         
-        # Extract transactions using road-tested patterns
+        # Attempt primary pattern (row based)
         transactions = self._parse_transactions_from_rows(rows, current_card)
+
+        # Fallback: simple line-based regex parsing if none found
+        if not transactions and collected_text_lines:
+            for line in collected_text_lines:
+                parsed = self._parse_lines([line], 1)
+                if parsed:
+                    transactions.extend(parsed)
+
+        raw_text_str = "\n".join(collected_text_lines)
 
         raw_data = {
             "extractor": "pdfplumber",
@@ -124,6 +133,7 @@ class PdfplumberExtractor(BaseExtractor):
             "words_extracted": len(all_words),
             "rows_identified": len(rows),
             "transaction_count": len(transactions),
+            "raw_text": raw_text_str,
         }
 
         return transactions, raw_data, page_count
@@ -465,9 +475,12 @@ class PdfplumberExtractor(BaseExtractor):
         # Always create CSV, even if empty 0.0
 
         # Average transaction confidence
-        avg_transaction_confidence = sum(
-            t.confidence_score for t in transactions
-        ) / len(transactions)
+        if transactions:
+            avg_transaction_confidence = sum(
+                t.confidence_score for t in transactions
+            ) / len(transactions)
+        else:
+            avg_transaction_confidence = 0.0
 
         # Pattern match ratio
         total_lines = raw_data.get("raw_text", "").count("\n")
