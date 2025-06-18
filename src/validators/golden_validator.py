@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pandas as pd
+# Optional pandas dependency (used only for CSV reading)
+from typing import Optional, TYPE_CHECKING
+
+try:
+    import pandas as pd  # type: ignore
+except ImportError:  # pragma: no cover – pandas optional in minimal install
+    pd = None  # type: ignore
 
 from ..core.models import ExtractorType, Transaction, ValidationResult
 from ..core.patterns import normalize_amount, normalize_date
@@ -49,6 +55,12 @@ class GoldenValidator:
 
     def _load_csv_as_transactions(self, csv_path: Path) -> list[Transaction]:
         """Load CSV file and convert to Transaction objects."""
+        if pd is None:
+            raise ImportError("pandas is required to load golden CSV files")
+
+        # Inform type checker that pandas is available beyond this point
+        assert pd is not None  # noqa: S101
+
         try:
             # Attempt to read with default delimiter first; if only one column, retry with semicolon delimiter
             df = pd.read_csv(csv_path, dtype=str)
