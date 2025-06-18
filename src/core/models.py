@@ -113,24 +113,22 @@ class PipelineResult:
     @property
     def total_amount_brl(self) -> Decimal:
         """Sum of all transaction amounts."""
-        return sum(t.amount_brl for t in self.transactions)
+        return sum((t.amount_brl for t in self.transactions), Decimal(0))
 
     @property
     def domestic_count(self) -> int:
         """Count of domestic transactions."""
         return sum(
-            1
-            for t in self.transactions
-            if t.transaction_type == TransactionType.DOMESTIC
+            (1 for t in self.transactions if t.transaction_type == TransactionType.DOMESTIC),
+            0,
         )
 
     @property
     def international_count(self) -> int:
         """Count of international transactions."""
         return sum(
-            1
-            for t in self.transactions
-            if t.transaction_type == TransactionType.INTERNATIONAL
+            (1 for t in self.transactions if t.transaction_type == TransactionType.INTERNATIONAL),
+            0,
         )
 
 
@@ -175,7 +173,7 @@ class EnsembleResult:
     @property
     def total_amount_brl(self) -> Decimal:
         """Sum of all final transaction amounts."""
-        return sum(t.amount_brl for t in self.final_transactions)
+        return sum((t.amount_brl for t in self.final_transactions), Decimal(0))
 
 
 @dataclass
