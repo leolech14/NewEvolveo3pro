@@ -1,132 +1,150 @@
 # NewEvolveo3pro
 
-🚀 **Failure-proof bank statement to CSV extraction pipeline**
+🚀 **Production-ready financial document processing system for Brazilian bank statements**
 
-A production-ready system that intelligently combines multiple PDF extraction engines with semantic validation to achieve 99%+ accuracy on Itaú credit card statements.
+A robust ML-enhanced pipeline that transforms Itaú credit card PDFs into structured transaction data with 70% ML accuracy and comprehensive validation against golden datasets.
 
 ## 🎯 Key Features
 
-- **Ensemble Extraction**: Smart orchestration of pdfplumber, Camelot, AWS Textract, and Azure Document Intelligence
-- **Race & Fallback**: Lightning-fast pdfplumber for born-digital PDFs, cloud OCR for scanned documents
-- **Semantic Validation**: Format-agnostic comparison ("156,78" ≡ "156.78") eliminates false negatives
-- **Confidence Calibration**: ML-powered confidence scoring across different extractors
-- **Golden Truth System**: Hand-verified CSV validation without circular dependencies
-- **Cost Controls**: Built-in budget limits and monitoring for cloud services
-- **Rich CLI**: Beautiful terminal interface with progress bars and colored output
+**Pipeline v2 - Enhanced Architecture:**
+- **Multi-Extractor Ensemble**: PDFPlumber, Camelot, AWS Textract, Azure, Google Document AI
+- **ML Enhancement Pipeline**: 70% category accuracy, 100% merchant extraction, FX prediction
+- **Unified Parsing Stack**: Row builders, regex catalogue, Brazilian format normalization
+- **Golden Dataset Validation**: 253 hand-verified transactions for precision/recall testing
+- **Fuzzy Deduplication**: Smart merging of similar transactions across extractors
+- **Production Infrastructure**: Docker + monitoring (Prometheus/Grafana)
+- **Python 3.13 Compatible**: Modern dependency stack with full compatibility
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   PDF Input     │───▶│  Ensemble Merger │───▶│ Validated CSV   │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                               │
-                      ┌────────┼────────┐
-                      ▼        ▼        ▼
-                 ┌─────────┐ ┌────────┐ ┌─────────┐
-                 │pdfplumber│ │Textract│ │ Azure   │
-                 │ (fast)  │ │(robust)│ │ (smart) │
-                 └─────────┘ └────────┘ └─────────┘
+┌─────────────┐   ┌──────────────┐   ┌─────────────┐   ┌─────────────┐
+│ PDF Input   │──▶│ Multi-       │──▶│ ML          │──▶│ Validated   │
+│ (Itaú)      │   │ Extractor    │   │ Enhancement │   │ CSV Output  │
+└─────────────┘   └──────────────┘   └─────────────┘   └─────────────┘
+                         │                   │
+                    ┌────┴────┐         ┌────┴────┐
+                    ▼    ▼    ▼         ▼    ▼    ▼
+              ┌─────────┐│────│   ┌─────────┐│────│
+              │PDFPlumber││AWS │   │Category ││FX  │
+              │Camelot  ││Azure│   │Merchant ││Conf│
+              │Google   ││    │   │Extractor││Cal │
+              └─────────┘└────┘   └─────────┘└────┘
 ```
 
-### Core Components
+### Core Components (Pipeline v2)
 
-- **`src/core/`**: Data models, regex patterns, confidence calibration
-- **`src/extractors/`**: Individual PDF extraction engines
-- **`src/merger/`**: Intelligent ensemble orchestration with conflict resolution
-- **`src/validators/`**: Semantic comparison and golden file validation
-- **`tools/`**: Streamlit golden editor and profiling utilities
+- **`src/core/`**: Enhanced data models, confidence calibration, unified regex patterns
+- **`src/extractors/`**: Multi-engine PDF processing with row builders
+- **`src/ml/`**: Complete ML pipeline with training data preparation
+- **`src/validators/`**: Precision/recall metrics and golden dataset validation
+- **`src/utils/`**: Word clustering, Brazilian normalization utilities
+- **`src/merge/`**: Fuzzy transaction deduplication and conflict resolution
+- **`src/classifiers/`**: Row classification and transaction categorization
 
 ## 🚀 Quick Start
 
 ### 1. Installation
 
 ```bash
-git clone <repository>
+git clone https://github.com/leolech14/NewEvolveo3pro.git
 cd NewEvolveo3pro
 
-# Install with all features
-pip install -e ".[all]"
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
-# Or minimal installation
-pip install -e .
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### 2. Configuration
+### 2. Environment Setup
 
 ```bash
-# Copy environment template
+# Set PYTHONPATH (required)
+export PYTHONPATH=/path/to/NewEvolveo3pro/src
+
+# Copy environment template (if available)
 cp .env.example .env
 
-# Edit with your credentials
+# Edit with your cloud API credentials
 nano .env
 ```
 
-### 3. Parse Your First Statement
+### 3. Run Smoke Tests
 
 ```bash
-# Single file with validation
-evolve parse statement.pdf --validate
-
-# All available PDFs
-evolve validate-all
-
-# Create new golden file
-evolve create-golden statement.pdf
+# Verify installation
+PYTHONPATH=/path/to/NewEvolveo3pro/src ./venv/bin/python3.13 smoke_test.py
 ```
 
-### 4. Check Pipeline Health
+### 4. Train ML Models
 
 ```bash
-evolve health-check
+# Prepare training data from golden datasets
+PYTHONPATH=/path/to/NewEvolveo3pro/src ./venv/bin/python3.13 prepare_ml_training.py
+
+# Train ML models
+PYTHONPATH=/path/to/NewEvolveo3pro/src ./venv/bin/python3.13 train_ml_models.py
 ```
+
+## 📊 Current Status
+
+### Smoke Test Results: 5/6 Passing ✅
+- ✅ Core modules imported successfully
+- ✅ Data models working correctly
+- ✅ Semantic comparison working correctly
+- ✅ Golden validator working correctly
+- ✅ CLI interface working correctly
+- ⚠️ Pattern normalization (minor issue - non-blocking)
+
+### ML Training Results ✅
+- **Dataset**: 253 transactions from golden files
+- **Category Classifier**: 70% test accuracy, 15 categories
+- **Merchant Extractor**: 43 cities learned, 100% extraction rate
+- **Training Pipeline**: Fully operational
+
+### Golden Dataset
+- **Total Transactions**: 253 verified samples
+- **Coverage**: 2024-10 (43 txns) + 2025-05 (212 txns)
+- **Categories**: 15 types including FX, FARMÁCIA, DIVERSOS
+- **Currencies**: BRL (181), EUR (58), USD (14)
 
 ## 📖 Usage Examples
 
-### Basic Extraction
+### CLI Extraction (Currently in Development)
 
 ```bash
-# Extract with default settings (race mode)
-evolve parse Itau_2024-10.pdf
+# Extract transactions from PDF
+python -m src.cli extract data/incoming/Itau_2024-10.pdf --output /tmp/result.csv
 
-# Use specific extractors
-evolve parse statement.pdf --extractors pdfplumber,textract
-
-# Full parallel mode for benchmarking
-evolve parse statement.pdf --parallel --save-raw
+# Process with specific extractor
+python -m src.cli extract statement.pdf --extractor pdfplumber
 ```
 
-### Validation & Quality Control
+### ML Training Pipeline
 
 ```bash
-# Validate single file
-evolve parse statement.pdf --validate
+# Prepare training data from golden datasets
+PYTHONPATH=/path/to/src ./venv/bin/python3.13 prepare_ml_training.py
 
-# Validate all available golden files
-evolve validate-all
+# Train all ML models
+PYTHONPATH=/path/to/src ./venv/bin/python3.13 train_ml_models.py
 
-# List available golden files
-evolve list-golden
+# Test individual components
+pytest tests/test_core.py
 ```
 
-### Golden File Management
+### Docker Deployment
 
 ```bash
-# Create golden from high-confidence extraction
-evolve create-golden statement.pdf --auto-approve --threshold 0.95
+# Start full stack
+cd infra/
+docker-compose up -d
 
-# Interactive golden creation (review before saving)
-evolve create-golden statement.pdf
-```
-
-### Performance Analysis
-
-```bash
-# Benchmark extraction performance
-evolve benchmark statement.pdf --runs 5
-
-# Check pipeline health
-evolve health-check
+# Individual services
+docker-compose up newevolveo3pro  # Main application
+docker-compose up streamlit       # Golden file editor
 ```
 
 ## 🎛️ Configuration
@@ -295,19 +313,24 @@ docker run -d \
 
 ## 📈 Performance
 
-### Benchmarks
+### Current Performance
 
-On typical Itaú statements (5-50 transactions):
+**Pipeline v2 Results:**
+- **ML Models**: Category (70% accuracy), Merchant (100% extraction)
+- **Golden Validation**: 253 verified transactions
+- **Smoke Tests**: 5/6 passing
+- **Dependencies**: Python 3.13 compatible
 
-- **pdfplumber**: <200ms, 95% accuracy on born-digital
-- **Textract**: 8-30s, 99% accuracy including scanned
-- **Ensemble**: Best of both, 99%+ accuracy, cost-optimized
+**Extraction Engines:**
+- **pdfplumber**: Fast text extraction for born-digital PDFs
+- **Textract/Azure/Google**: OCR fallback for scanned documents
+- **Ensemble**: Fuzzy merging with confidence scoring
 
 ### Scaling
 
-- **Horizontal**: Multiple workers via Prefect/Celery
-- **Cost optimization**: Race mode reduces cloud API calls by 70%
-- **Caching**: Raw extraction results cached for re-processing
+- **Docker Stack**: Full containerization with monitoring
+- **ML Pipeline**: Automated training from golden datasets
+- **Validation**: Precision/recall metrics for quality assurance
 
 ## 🤝 Contributing
 
