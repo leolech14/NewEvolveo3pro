@@ -64,4 +64,4 @@ plotly>=5.18.0
 # Removed ydata-profiling due to Python 3.13 compatibility issues
 
 # Web search integration
-serpapi>=2.4.0
+serpapi==0.1.5
