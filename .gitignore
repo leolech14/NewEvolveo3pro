@@ -165,3 +165,8 @@ docker-compose.override.yml
 prometheus_data/
 grafana_data/
 
+# Google Cloud SDK - Large files
+google-cloud-sdk/
+google-cloud-cli-*.tar.gz
+*.tar.gz
+
