@@ -210,33 +210,47 @@ class PdfplumberExtractor(BaseExtractor):
             if not line:
                 continue
             
-            # Skip obvious header/footer patterns
-            if any(pattern in line.upper() for pattern in [
-                "ITAÚ UNIBANCO", "CARTÃO DE CRÉDITO", "DATA", "HISTÓRICO", "VALOR",
-                "PÁGINA", "ATENDIMENTO", "WWW.ITAU.COM.BR", "CENTRAL DE RELACIONAMENTO"
-            ]):
-                continue
+            # Some statements print two transactions per physical line (two columns).
+            # If more than one date pattern appears, split the line so that each
+            # segment starts with a date token.
+            if len(re.findall(r"\d{2}/\d{2}\s", line)) > 1:
+                # Use look-ahead to keep the delimiter in the resulting segments
+                segments = re.split(r"(?=\d{2}/\d{2}\s)", line)
+            else:
+                segments = [line]
 
-            # Try national transaction pattern first
-            transaction = self._try_national_pattern(line)
-            if transaction:
-                transaction.source_extractor = self.extractor_type
-                transactions.append(transaction)
-                continue
+            for seg in segments:
+                seg = seg.strip()
+                if not seg:
+                    continue
 
-            # Try FX transaction pattern
-            transaction = self._try_fx_pattern(line)
-            if transaction:
-                transaction.source_extractor = self.extractor_type
-                transactions.append(transaction)
-                continue
+                # Skip obvious header/footer patterns
+                if any(pattern in seg.upper() for pattern in [
+                    "ITAÚ UNIBANCO", "CARTÃO DE CRÉDITO", "DATA", "HISTÓRICO", "VALOR",
+                    "PÁGINA", "ATENDIMENTO", "WWW.ITAU.COM.BR", "CENTRAL DE RELACIONAMENTO"
+                ]):
+                    continue
 
-            # Try fallback parsing
-            transaction = self._try_fallback_pattern(line)
-            if transaction:
-                transaction.source_extractor = self.extractor_type
-                transaction.confidence_score *= 0.7  # Lower confidence for fallback
-                transactions.append(transaction)
+                # Try national transaction pattern first
+                transaction = self._try_national_pattern(seg)
+                if transaction:
+                    transaction.source_extractor = self.extractor_type
+                    transactions.append(transaction)
+                    continue
+
+                # Try FX transaction pattern
+                transaction = self._try_fx_pattern(seg)
+                if transaction:
+                    transaction.source_extractor = self.extractor_type
+                    transactions.append(transaction)
+                    continue
+
+                # Try fallback parsing
+                transaction = self._try_fallback_pattern(seg)
+                if transaction:
+                    transaction.source_extractor = self.extractor_type
+                    transaction.confidence_score *= 0.7  # Lower confidence for fallback
+                    transactions.append(transaction)
 
         return transactions
 
