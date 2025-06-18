@@ -7,12 +7,12 @@ import re
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 try:
-    import pdfplumber
-except ImportError:
-    pdfplumber = None
+    import pdfplumber  # type: ignore
+except ImportError:  # pragma: no cover
+    pdfplumber = None  # type: ignore
 
 from ..core.models import ExtractorType, PipelineResult, Transaction, TransactionType
 from ..core.patterns import (
@@ -87,7 +87,7 @@ class PdfplumberExtractor(BaseExtractor):
         current_card = ""
         collected_text_lines: list[str] = []
 
-        with pdfplumber.open(pdf_path) as pdf:
+        with _open_pdf(pdf_path) as pdf:
             page_count = len(pdf.pages)
 
             for page_num, page in enumerate(pdf.pages):
@@ -594,3 +594,13 @@ class PdfplumberExtractor(BaseExtractor):
         
         except Exception as e:
             print(f"Failed to save CSV: {e}")
+
+
+def _open_pdf(path: Path) -> "pdfplumber.PDF":  # type: ignore
+    """Type-guarded wrapper around pdfplumber.open()."""
+    if pdfplumber is None:
+        raise RuntimeError("pdfplumber is not installed – cannot open PDF")
+    try:
+        return pdfplumber.open(str(path))  # type: ignore[attr-defined]
+    except Exception as exc:  # pragma: no cover – traps corrupt files
+        raise RuntimeError(f"Failed to open PDF {path}: {exc}") from exc

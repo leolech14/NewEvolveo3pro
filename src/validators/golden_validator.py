@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 # Optional pandas dependency (used only for CSV reading)
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Any, Dict
 
 try:
     import pandas as pd  # type: ignore
@@ -199,7 +199,7 @@ class GoldenValidator:
         """Get list of PDF names that have golden data."""
         return list(self.golden_transactions.keys())
 
-    def get_golden_summary(self) -> dict[str, dict[str, any]]:
+    def get_golden_summary(self) -> Dict[str, Dict[str, Any]]:
         """Get summary statistics for all golden files."""
         summary = {}
 
