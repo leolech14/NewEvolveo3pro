@@ -81,18 +81,39 @@ def batch_enhance_merchants(merchant_list: List[str]) -> Dict[str, Dict]:
     return enhanced_merchants
 
 
+def main():
+    """Main function for standalone usage."""
+    import sys
+    
+    if len(sys.argv) > 1:
+        # Single company search from command line
+        company = sys.argv[1]
+        print(f"🔍 Searching for: {company}")
+        
+        results = search_company(company)
+        if results:
+            print(f"\n✅ Found {len(results)} results:")
+            for i, result in enumerate(results[:3], 1):
+                print(f"{i}. {result.get('title', 'No title')}")
+                print(f"   🔗 {result.get('link', 'No link')}\n")
+        else:
+            print("❌ No results found")
+    else:
+        # Example usage with test merchants
+        test_merchants = [
+            "Banco Itaú",
+            "Farmacia Sao Joao", 
+            "Apple",
+            "Google"
+        ]
+        
+        print("🌐 Testing SerpAPI integration...")
+        results = batch_enhance_merchants(test_merchants)
+        
+        print("\n📊 Results Summary:")
+        for merchant, data in results.items():
+            print(f"• {merchant}: {data.get('search_title', 'No title')}")
+
+
 if __name__ == "__main__":
-    # Example usage
-    test_merchants = [
-        "Banco Itaú",
-        "Farmacia Sao Joao", 
-        "Apple",
-        "Google"
-    ]
-    
-    print("🌐 Testing SerpAPI integration...")
-    results = batch_enhance_merchants(test_merchants)
-    
-    print("\n📊 Results Summary:")
-    for merchant, data in results.items():
-        print(f"• {merchant}: {data.get('search_title', 'No title')}")
+    main()

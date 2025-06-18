@@ -36,7 +36,8 @@ def extract_with_newevolveo3pro(pdf_path: str):
         return None
 
 
-if __name__ == "__main__":
+def main():
+    """Main function for standalone usage."""
     # Accept PDF file as command-line argument
     if len(sys.argv) > 1:
         pdf_file = sys.argv[1]
@@ -65,3 +66,7 @@ if __name__ == "__main__":
         else:
             print("  - data/incoming/ directory not found")
         print(f"\n💡 Usage: python pdf_extract.py path/to/your/file.pdf")
+
+
+if __name__ == "__main__":
+    main()
