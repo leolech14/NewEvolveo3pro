@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 # typing
-from typing import Callable, Any
+from typing import Callable, Any, Union
 
 import pickle
 from pathlib import Path
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.isotonic import IsotonicRegression  # type: ignore
 import joblib
 
 from .models import ExtractorType
 
 # Default confidence mappings (will be overridden by learned calibrations)
-DEFAULT_CONFIDENCE_MAPPINGS: dict[ExtractorType, callable] = {
+DEFAULT_CONFIDENCE_MAPPINGS: dict[ExtractorType, Callable[[float], float]] = {
     ExtractorType.PDFPLUMBER: lambda score: min(
         score * 0.9, 1.0
     ),  # Conservative for layout changes
@@ -32,8 +33,10 @@ class ConfidenceCalibrator:
     def __init__(self, model_path: str = "models/confidence_platt.joblib"):
         self.model_path = model_path
         self.model: LogisticRegression | None = self._load()
+        # File where per-extractor isotonic regressors are persisted
+        self.calibration_file: Path = Path("models/calibrations.pkl")
         # Ensure internal mapping exists even if no calibrations trained yet
-        self.calibrators: dict[ExtractorType, Any] = {}
+        self.calibrators: dict[ExtractorType, Union[IsotonicRegression, Callable[[float], float]]] = {}
 
     def _load(self):
         try:
