@@ -1,6 +1,8 @@
 """Confidence calibration and scoring utilities."""
 
 from __future__ import annotations
+# typing
+from typing import Callable, Any
 
 import pickle
 from pathlib import Path
@@ -30,6 +32,8 @@ class ConfidenceCalibrator:
     def __init__(self, model_path: str = "models/confidence_platt.joblib"):
         self.model_path = model_path
         self.model: LogisticRegression | None = self._load()
+        # Ensure internal mapping exists even if no calibrations trained yet
+        self.calibrators: dict[ExtractorType, Any] = {}
 
     def _load(self):
         try:
@@ -85,8 +89,13 @@ class ConfidenceCalibrator:
 
     def calibrate_score(self, extractor_type: ExtractorType, raw_score: float) -> float:
         """Apply calibration to a raw confidence score."""
-        if extractor_type in self.calibrators:
-            return float(self.calibrators[extractor_type].predict([raw_score])[0])
+        if extractor_type in getattr(self, "calibrators", {}):
+            calibrator = self.calibrators[extractor_type]
+            try:
+                return float(calibrator.predict([raw_score])[0])
+            except Exception:
+                # Fallback if calibrator is not a scikit model with predict
+                return float(calibrator(raw_score))
         else:
             # Use default mapping if no calibration available
             mapper = DEFAULT_CONFIDENCE_MAPPINGS.get(extractor_type, lambda x: x)
