@@ -239,5 +239,10 @@ def version():
     ))
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the nevo command."""
     app()
+
+
+if __name__ == "__main__":
+    main()

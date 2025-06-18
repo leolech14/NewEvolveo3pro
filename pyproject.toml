@@ -5,21 +5,19 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "newevolveo3pro"
 version = "0.1.0"
-description = "Failure-proof bank statement to CSV extraction pipeline"
+description = "Production-ready financial document processing with CLI and SerpAPI integration"
 authors = [
     {name = "Leo Lech", email = "leo@example.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
@@ -29,7 +27,7 @@ dependencies = [
     "numpy>=1.24.0",
     "pdfplumber>=0.11.6",
     "PyMuPDF>=1.23.0",
-    "camelot-py[cv]>=0.11.0",
+    "camelot-py>=0.11.0",
     "boto3>=1.35.0",
     "azure-ai-formrecognizer>=3.3.0",
     "rapidfuzz>=3.10.0",
@@ -41,6 +39,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pydantic>=2.5.0",
     "loguru>=0.7.0",
+    "serpapi==0.1.5",
 ]
 
 [project.optional-dependencies]
@@ -71,7 +70,7 @@ ui = [
     "jupyter>=1.0.0",
     "ipywidgets>=8.0.0",
     "plotly>=5.18.0",
-    "ydata-profiling>=4.6.0",
+    # "ydata-profiling>=4.6.0",  # Removed due to Python 3.13 compatibility
 ]
 
 all = [
@@ -79,7 +78,7 @@ all = [
 ]
 
 [project.scripts]
-evolve = "src.cli:main"
+nevo = "cli:main"
 
 [project.urls]
 Homepage = "https://github.com/leolech14/NewEvolveo3pro"
@@ -87,7 +86,7 @@ Repository = "https://github.com/leolech14/NewEvolveo3pro"
 Issues = "https://github.com/leolech14/NewEvolveo3pro/issues"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml", "*.yml", "*.json", "*.toml"]
@@ -95,7 +94,7 @@ where = ["src"]
 # Black configuration
 [tool.black]
 line-length = 88
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py313']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -113,7 +112,7 @@ extend-exclude = '''
 
 # Ruff configuration
 [tool.ruff]
-target-version = "py310"
+target-version = "py313"
 line-length = 88
 select = [
     "E",  # pycodestyle errors
@@ -142,7 +141,7 @@ known-first-party = ["src"]
 
 # MyPy configuration
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.13"
 check_untyped_defs = true
 disallow_any_generics = true
 disallow_incomplete_defs = true
