@@ -61,78 +61,76 @@ class GoldenValidator:
         # Inform type checker that pandas is available beyond this point
         assert pd is not None  # noqa: S101
 
-        try:
-            # Attempt to read with default delimiter first; if only one column, retry with semicolon delimiter
-            df = pd.read_csv(csv_path, dtype=str)
-            if df.shape[1] == 1:
-                # Likely semicolon-separated Brazilian CSV
-                df = pd.read_csv(csv_path, dtype=str, sep=";")
+        import pandas as _pd  # type: ignore  # mypy: ensured by assert above
 
-            # Normalize column names
-            df.columns = df.columns.str.lower().str.strip()
+        # Attempt to read with default delimiter; if only one column then it's very
+        # likely a semicolon-separated Brazilian CSV
+        df: _pd.DataFrame = _pd.read_csv(csv_path, dtype=str)
 
-            # Map common column name variations
-            column_mapping = {
-                "data": "date",
-                "post_date": "date",
-                "descricao": "description",
-                "descrição": "description",
-                "desc_raw": "description",
-                "valor": "amount_brl",
-                "amount": "amount_brl",
-                "categoria": "category",
-                "category": "category",
-                "tipo": "transaction_type",
-            }
+        if df.shape[1] == 1:
+            df = _pd.read_csv(csv_path, dtype=str, sep=";")
 
-            df = df.rename(columns=column_mapping)
+        # Normalize column names
+        df.columns = df.columns.str.lower().str.strip()
 
-            # Ensure required columns exist
-            required_columns = ["date", "description", "amount_brl"]
-            for col in required_columns:
-                if col not in df.columns:
-                    raise ValueError(f"Required column '{col}' not found in {csv_path}")
+        # Map common column name variations
+        column_mapping = {
+            "data": "date",
+            "post_date": "date",
+            "descricao": "description",
+            "descrição": "description",
+            "desc_raw": "description",
+            "valor": "amount_brl",
+            "amount": "amount_brl",
+            "categoria": "category",
+            "category": "category",
+            "tipo": "transaction_type",
+        }
 
-            transactions = []
+        df = df.rename(columns=column_mapping)
 
-            for _, row in df.iterrows():
-                try:
-                    # Parse date
-                    date_str = str(row["date"]).strip()
-                    normalized_date = normalize_date(date_str)
-                    year, month, day = normalized_date.split("-")
-                    parsed_date = date(int(year), int(month), int(day))
+        # Ensure required columns exist
+        required_columns = ["date", "description", "amount_brl"]
+        for col in required_columns:
+            if col not in df.columns:
+                raise ValueError(f"Required column '{col}' not found in {csv_path}")
 
-                    # Parse amount
-                    amount_str = str(row["amount_brl"]).strip()
-                    amount = normalize_amount(amount_str)
+        transactions = []
 
-                    # Get description
-                    description = str(row["description"]).strip()
+        for _, row in df.iterrows():
+            try:
+                # Parse date
+                date_str = str(row["date"]).strip()
+                normalized_date = normalize_date(date_str)
+                year, month, day = normalized_date.split("-")
+                parsed_date = date(int(year), int(month), int(day))
 
-                    # Optional fields
-                    category = str(row.get("category", "")).strip() or None
+                # Parse amount
+                amount_str = str(row["amount_brl"]).strip()
+                amount = normalize_amount(amount_str)
 
-                    transaction = Transaction(
-                        date=parsed_date,
-                        description=description,
-                        amount_brl=amount,
-                        category=category,
-                        confidence_score=1.0,  # Golden data is 100% confident
-                        raw_text=f"Golden: {date_str} | {description} | {amount_str}",
-                    )
+                # Get description
+                description = str(row["description"]).strip()
 
-                    transactions.append(transaction)
+                # Optional fields
+                category = str(row.get("category", "")).strip()
 
-                except Exception as e:
-                    print(f"Error parsing row in {csv_path}: {e}")
-                    continue
+                transaction = Transaction(
+                    date=parsed_date,
+                    description=description,
+                    amount_brl=amount,
+                    category=category,
+                    confidence_score=1.0,  # Golden data is 100% confident
+                    raw_text=f"Golden: {date_str} | {description} | {amount_str}",
+                )
 
-            return transactions
+                transactions.append(transaction)
 
-        except Exception as e:
-            print(f"Error loading CSV {csv_path}: {e}")
-            return []
+            except Exception as e:
+                print(f"Error parsing row in {csv_path}: {e}")
+                continue
+
+        return transactions
 
     def validate_against_golden(
         self,
