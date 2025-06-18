@@ -107,10 +107,13 @@ class ConfidenceCalibrator:
 
     def get_calibration_stats(self) -> dict[str, int]:
         """Get statistics about available calibrations."""
-        return {
-            extractor.value: len(getattr(calibrator, "X_thresholds_", []))
-            for extractor, calibrator in self.calibrators.items()
-        }
+        stats: dict[str, int] = {}
+        for extractor, calibrator in self.calibrators.items():
+            size = 0
+            if hasattr(calibrator, "X_thresholds_"):
+                size = len(getattr(calibrator, "X_thresholds_", []))  # type: ignore[arg-type]
+            stats[extractor.value] = size
+        return stats
 
 
 def calculate_extraction_confidence(
@@ -180,10 +183,8 @@ def merge_confidence_scores(
         total_weight = sum(weights)
         if total_weight == 0:
             return 0.0
-        return (
-            sum(score * weight for score, weight in zip(scores, weights, strict=False))
-            / total_weight
-        )
+        weighted_sum = sum(score * weight for score, weight in zip(scores, weights))
+        return weighted_sum / total_weight
 
     elif strategy == "min":
         return min(scores)
