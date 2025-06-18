@@ -9,6 +9,8 @@ A robust ML-enhanced pipeline that transforms Itaú credit card PDFs into struct
 **Pipeline v2 - Enhanced Architecture:**
 - **Multi-Extractor Ensemble**: PDFPlumber, Camelot, AWS Textract, Azure, Google Document AI
 - **ML Enhancement Pipeline**: 70% category accuracy, 100% merchant extraction, FX prediction
+- **Unified CLI Interface**: Rich console with typer, progress indicators, dual extraction methods
+- **SerpAPI Integration**: Company search with Brazilian market optimization and rate limiting
 - **Unified Parsing Stack**: Row builders, regex catalogue, Brazilian format normalization
 - **Golden Dataset Validation**: 253 hand-verified transactions for precision/recall testing
 - **Fuzzy Deduplication**: Smart merging of similar transactions across extractors
@@ -64,12 +66,20 @@ pip install -r requirements.txt
 # Set PYTHONPATH (required)
 export PYTHONPATH=/path/to/NewEvolveo3pro/src
 
+# Set SerpAPI key for company search (optional)
+export SERPAPI_API_KEY=your_serpapi_key_here
+
 # Copy environment template (if available)
 cp .env.example .env
 
 # Edit with your cloud API credentials
 nano .env
 ```
+
+**Prerequisites:**
+- **Python 3.13** (required)
+- **SerpAPI key** (for company search) - Get free key at [serpapi.com](https://serpapi.com)
+- **Cloud credentials** (optional) - AWS, Azure, or Google for OCR enhancement
 
 ### 3. Run Smoke Tests
 
@@ -112,15 +122,40 @@ PYTHONPATH=/path/to/NewEvolveo3pro/src ./venv/bin/python3.13 train_ml_models.py
 
 ## 📖 Usage Examples
 
-### CLI Extraction (Currently in Development)
+### 🎯 CLI Interface (NEW!)
 
+**Quick Start:**
 ```bash
-# Extract transactions from PDF
-python -m src.cli extract data/incoming/Itau_2024-10.pdf --output /tmp/result.csv
+# Extract text from PDF (simple method)
+python cli.py extract data/incoming/Itau_2024-10.pdf --method simple
 
-# Process with specific extractor
-python -m src.cli extract statement.pdf --extractor pdfplumber
+# Full pipeline extraction with ML enhancement
+python cli.py extract data/incoming/Itau_2024-10.pdf --method pipeline --output result.json
+
+# Search for company information
+export SERPAPI_API_KEY=your_key_here
+python cli.py search "Banco Itaú" --verbose --limit 5
+
+# Show version and capabilities
+python cli.py version
 ```
+
+**Advanced Usage:**
+```bash
+# Extract with verbose output and save to JSON
+python cli.py extract statement.pdf --method pipeline --output results.json --verbose
+
+# Simple text extraction to file
+python cli.py extract statement.pdf --method simple --output extracted.txt
+
+# Company search with country filter
+python cli.py search "Magazine Luiza" --country br --limit 3 --verbose
+```
+
+**Available Commands:**
+- `extract` - PDF text/transaction extraction with dual methods
+- `search` - SerpAPI company lookup with Brazilian optimization  
+- `version` - Show system capabilities and model status
 
 ### ML Training Pipeline
 
@@ -277,6 +312,21 @@ evolve create-golden your-statement.pdf
 ```bash
 # Check if scanned vs born-digital
 evolve parse file.pdf --extractors textract,azure --save-raw
+```
+
+**CLI import errors**
+```bash
+# Ensure PYTHONPATH is set for pipeline method
+export PYTHONPATH=/path/to/NewEvolveo3pro/src
+python cli.py extract file.pdf --method pipeline --verbose
+```
+
+**SerpAPI not working**
+```bash
+# Verify API key is set
+echo $SERPAPI_API_KEY
+# Test with verbose mode
+python cli.py search "test company" --verbose
 ```
 
 ### Debug Mode
