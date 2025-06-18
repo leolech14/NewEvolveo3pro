@@ -34,17 +34,14 @@ def enrich_with_ml(extracted_df, model):
         X = extracted_df['description'].fillna("")
     else:
         raise ValueError("No description field found for ML enrichment.")
-    # Model expects 2D array
-    X_input = X.values.reshape(-1, 1) if len(X.shape) == 1 else X
-    y_pred = model.predict(X_input)
-    # Assign predictions to DataFrame
-    target_fields = ['category', 'merchant_city', 'city']
-    for i, field in enumerate(target_fields):
-        if field in extracted_df.columns:
-            extracted_df[field + '_ml'] = y_pred[:, i]
-            extracted_df[field] = y_pred[:, i]  # Overwrite with ML prediction
-        else:
-            extracted_df[field] = y_pred[:, i]
+    # Model expects text Series directly for TfidfVectorizer
+    y_pred = model.predict(X)
+    # Single output model (category only)
+    if 'category' in extracted_df.columns:
+        extracted_df['category_ml'] = y_pred
+        extracted_df['category'] = y_pred  # Overwrite with ML prediction
+    else:
+        extracted_df['category'] = y_pred
     return extracted_df
 
 def main():
@@ -67,12 +64,12 @@ def main():
     field_stats_after, _ = compare_fields(golden, enriched, matches)
 
     print("\nField-level accuracy BEFORE enrichment:")
-    for field in ['category', 'merchant_city', 'city']:
+    for field in ['category']:  # Only category is predicted by this model
         stats = field_stats_before.get(field, {'correct': 0, 'total': 0})
         acc = stats['correct'] / stats['total'] if stats['total'] else 0
         print(f"  {field}: {acc:.2%} ({stats['correct']}/{stats['total']})")
     print("\nField-level accuracy AFTER enrichment:")
-    for field in ['category', 'merchant_city', 'city']:
+    for field in ['category']:  # Only category is predicted by this model
         stats = field_stats_after.get(field, {'correct': 0, 'total': 0})
         acc = stats['correct'] / stats['total'] if stats['total'] else 0
         print(f"  {field}: {acc:.2%} ({stats['correct']}/{stats['total']})")

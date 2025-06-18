@@ -4,7 +4,7 @@ Run Full Extraction, ML, and Analysis Pipeline
 =============================================
 
 Usage:
-    python3 tools/run_full_pipeline.py
+    ./venv/bin/python3.13 tools/run_full_pipeline.py
 
 - Runs batch extraction on all required PDFs.
 - Trains the ML category classifier.
