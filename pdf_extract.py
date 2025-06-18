@@ -1,5 +1,6 @@
 """Basic PDF extraction example using the NewEvolveo3pro pipeline."""
 
+import sys
 import pdfplumber
 from pathlib import Path
 
@@ -36,11 +37,17 @@ def extract_with_newevolveo3pro(pdf_path: str):
 
 
 if __name__ == "__main__":
-    # Example usage
-    pdf_file = "data/incoming/sample.pdf"  # Update with your PDF path
+    # Accept PDF file as command-line argument
+    if len(sys.argv) > 1:
+        pdf_file = sys.argv[1]
+    else:
+        pdf_file = "data/incoming/Itau_2024-10.pdf"  # Default file
+        print(f"💡 No PDF specified, using default: {pdf_file}")
+        print(f"💡 Usage: python pdf_extract.py path/to/your/file.pdf")
     
     if Path(pdf_file).exists():
-        print("🔍 Simple text extraction:")
+        print(f"📄 Processing: {pdf_file}")
+        print("\n🔍 Simple text extraction:")
         text = extract_text_simple(pdf_file)
         print(text[:500] + "..." if len(text) > 500 else text)
         
@@ -50,4 +57,11 @@ if __name__ == "__main__":
         
     else:
         print(f"❌ PDF file not found: {pdf_file}")
-        print("💡 Add a PDF to data/incoming/ or update the path")
+        print("💡 Available PDFs:")
+        incoming_dir = Path("data/incoming")
+        if incoming_dir.exists():
+            for pdf in incoming_dir.glob("*.pdf"):
+                print(f"  - {pdf}")
+        else:
+            print("  - data/incoming/ directory not found")
+        print(f"\n💡 Usage: python pdf_extract.py path/to/your/file.pdf")
