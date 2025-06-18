@@ -39,13 +39,22 @@ class GoldenValidator:
         """Infer PDF name from golden file stem."""
         # Remove 'golden_' prefix if present
         if golden_stem.startswith("golden_"):
-            return golden_stem[7:] + ".pdf"
-        return golden_stem + ".pdf"
+            golden_stem = golden_stem[7:]
+
+        # Many datasets keep original bank prefix (e.g., 'Itau_2024-10.pdf')
+        if not golden_stem.lower().startswith("itau_"):
+            return f"Itau_{golden_stem}.pdf"
+
+        return f"{golden_stem}.pdf"
 
     def _load_csv_as_transactions(self, csv_path: Path) -> list[Transaction]:
         """Load CSV file and convert to Transaction objects."""
         try:
+            # Attempt to read with default delimiter first; if only one column, retry with semicolon delimiter
             df = pd.read_csv(csv_path, dtype=str)
+            if df.shape[1] == 1:
+                # Likely semicolon-separated Brazilian CSV
+                df = pd.read_csv(csv_path, dtype=str, sep=";")
 
             # Normalize column names
             df.columns = df.columns.str.lower().str.strip()
