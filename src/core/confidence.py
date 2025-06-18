@@ -92,10 +92,11 @@ class ConfidenceCalibrator:
         if extractor_type in getattr(self, "calibrators", {}):
             calibrator = self.calibrators[extractor_type]
             try:
-                return float(calibrator.predict([raw_score])[0])
+                # If calibrator is a scikit-learn model
+                return float(calibrator.predict([raw_score])[0])  # type: ignore[attr-defined]
             except Exception:
-                # Fallback if calibrator is not a scikit model with predict
-                return float(calibrator(raw_score))
+                # If calibrator is a simple callable mapping
+                return float(calibrator(raw_score))  # type: ignore[misc]
         else:
             # Use default mapping if no calibration available
             mapper = DEFAULT_CONFIDENCE_MAPPINGS.get(extractor_type, lambda x: x)
