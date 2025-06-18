@@ -7,7 +7,7 @@ numpy>=1.24.0
 # PDF processing
 pdfplumber>=0.11.6
 PyMuPDF>=1.23.0
-camelot-py[cv]>=0.11.0
+camelot-py[base]>=0.11.0
 
 # Cloud OCR services
 boto3>=1.35.0
@@ -61,4 +61,4 @@ ipywidgets>=8.0.0
 
 # Visualization (for profiling reports)
 plotly>=5.18.0
-ydata-profiling>=4.6.0
+# Removed ydata-profiling due to Python 3.13 compatibility issues

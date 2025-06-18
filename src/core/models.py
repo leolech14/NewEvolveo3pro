@@ -56,6 +56,8 @@ class Transaction:
     # System fields
     transaction_type: TransactionType = TransactionType.DOMESTIC
     confidence_score: float = 1.0
+    bbox: tuple[float, float, float, float] | None = None
+    card_last4: str | None = None
     source_extractor: ExtractorType | None = None
     raw_text: str | None = None
 

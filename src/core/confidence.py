@@ -5,7 +5,8 @@ from __future__ import annotations
 import pickle
 from pathlib import Path
 
-from sklearn.isotonic import IsotonicRegression
+from sklearn.linear_model import LogisticRegression
+import joblib
 
 from .models import ExtractorType
 
@@ -26,10 +27,22 @@ DEFAULT_CONFIDENCE_MAPPINGS: dict[ExtractorType, callable] = {
 class ConfidenceCalibrator:
     """Calibrates confidence scores across different extractors."""
 
-    def __init__(self, calibration_file: str = "confidence_calibration.pkl"):
-        self.calibration_file = Path(calibration_file)
-        self.calibrators: dict[ExtractorType, IsotonicRegression] = {}
-        self.load_calibrations()
+    def __init__(self, model_path: str = "models/confidence_platt.joblib"):
+        self.model_path = model_path
+        self.model: LogisticRegression | None = self._load()
+
+    def _load(self):
+        try:
+            return joblib.load(self.model_path)
+        except FileNotFoundError:
+            return None
+
+    def score(self, features: list[float]) -> float:
+        if self.model:
+            proba = self.model.predict_proba([features])[0][1]
+            return float(proba)
+        # fallback
+        return 0.8
 
     def load_calibrations(self) -> None:
         """Load existing calibrations from disk."""
